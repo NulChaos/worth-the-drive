@@ -1,0 +1,63 @@
+name: Build APK
+
+# Builds a signed APK and publishes it as a GitHub Release whenever the Android code changes.
+# Changes to web/ (the app's content and restaurant data) don't need a new APK:
+# the installed app downloads them from main on its own.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'android/**'
+      - '.github/workflows/android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Set up signing key
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          KS="$RUNNER_TEMP/release.keystore"
+          if [ -n "$KS_B64" ] && [ -n "$KS_PASS" ]; then
+            echo "$KS_B64" | base64 -d > "$KS"
+            echo "KEYSTORE_PASSWORD=$KS_PASS" >> "$GITHUB_ENV"
+          else
+            echo "::warning::Signing secrets are missing, so this build uses a throwaway key. Phones will need to uninstall before installing the next build. See README."
+            keytool -genkeypair -keystore "$KS" -alias wtd -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass temppass -keypass temppass -dname "CN=Worth the Drive"
+            echo "KEYSTORE_PASSWORD=temppass" >> "$GITHUB_ENV"
+          fi
+          echo "KEYSTORE_PATH=$KS" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: gradle -p android assembleRelease --no-daemon --stacktrace
+
+      - name: Rename APK
+        run: cp android/app/build/outputs/apk/release/app-release.apk WorthTheDrive.apk
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Worth the Drive · build ${{ github.run_number }}
+          make_latest: true
+          files: WorthTheDrive.apk
+          body: |
+            Download **WorthTheDrive.apk** on your Android phone and open it to install.
+            Built from ${{ github.sha }}.

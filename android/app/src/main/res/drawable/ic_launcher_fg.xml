@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Map pin with a dashed road beneath it, on a 108dp adaptive-icon canvas (safe zone is the middle 66dp). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M54,28c-10.5,0 -19,8.3 -19,18.6c0,13.6 19,33.4 19,33.4s19,-19.8 19,-33.4C73,36.3 64.5,28 54,28zM54,53.5c-4,0 -7.2,-3.1 -7.2,-7s3.2,-7 7.2,-7s7.2,3.1 7.2,7S58,53.5 54,53.5z" />
+    <path android:fillColor="#FF6B9D"
+        android:pathData="M54,42.5a4,4 0,1 1,0 8a4,4 0,1 1,0 -8z" />
+    <path android:fillColor="#FFFFFF" android:fillAlpha="0.7"
+        android:pathData="M36,82h8v3h-8zM50,82h8v3h-8zM64,82h8v3h-8z" />
+</vector>

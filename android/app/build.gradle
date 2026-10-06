@@ -1,0 +1,59 @@
+plugins {
+    id 'com.android.application'
+}
+
+def env = System.getenv()
+def runNumber = (env.GITHUB_RUN_NUMBER ?: "1") as int
+
+android {
+    namespace 'com.worththedrive.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.worththedrive.app"
+        minSdk 26
+        targetSdk 34
+        versionCode runNumber
+        versionName "1.0.${runNumber}"
+        // Filled in by GitHub Actions so the app knows where to look for updates.
+        buildConfigField "String", "REPO", "\"${env.GITHUB_REPOSITORY ?: ''}\""
+        buildConfigField "String", "GIT_SHA", "\"${env.GITHUB_SHA ?: 'dev'}\""
+    }
+
+    buildFeatures { buildConfig true }
+
+    signingConfigs {
+        release {
+            storeFile file(env.KEYSTORE_PATH ?: "release.keystore")
+            storePassword env.KEYSTORE_PASSWORD ?: ""
+            keyAlias "wtd"
+            keyPassword env.KEYSTORE_PASSWORD ?: ""
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    // The web app in /web is bundled into the APK as its offline copy.
+    sourceSets {
+        main { assets.srcDirs += ['../../web'] }
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.11.0'
+}

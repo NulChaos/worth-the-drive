@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Worth the Drive</title>
+<link rel="stylesheet" href="leaflet.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one-column tool — dial + trade-off chart on the side, ranked list or the Surprise wheel in the main column; two columns on desktop */
+:root{
+  --bg:#F2F4F1; --panel:#FFFFFF; --ink:#16201D; --muted:#5B6863; --line:#DCE2DE;
+  --accent:#0F7A5A; --accent-soft:#DDEFE7; --neon:#D6336C; --neon-soft:#FBE3EC;
+  --gold:#C98A10; --mapbg:#E7ECE8; --road:#FFFFFF; --fwy:#F2C46B; --good:#1E8A4C; --warn:#B7791F; --bad:#C0392B;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Figtree",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F1513; --panel:#17201D; --ink:#E8EEEB; --muted:#94A39D; --line:#2A3632;
+  --accent:#3CC796; --accent-soft:#163A2E; --neon:#FF6B9D; --neon-soft:#3A1A27;
+  --gold:#F2B33D; --mapbg:#121A17; --road:#2C3934; --fwy:#6B5A2E; --good:#4CC27F; --warn:#E3A848; --bad:#F06A5C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1513; --panel:#17201D; --ink:#E8EEEB; --muted:#94A39D; --line:#2A3632;
+  --accent:#3CC796; --accent-soft:#163A2E; --neon:#FF6B9D; --neon-soft:#3A1A27;
+  --gold:#F2B33D; --mapbg:#121A17; --road:#2C3934; --fwy:#6B5A2E; --good:#4CC27F; --warn:#E3A848; --bad:#F06A5C; color-scheme:dark}
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+body{margin:0;-webkit-tap-highlight-color:transparent;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;padding-inline:16px;padding-block:20px 48px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(28px,6vw,44px);letter-spacing:-.02em;line-height:1;margin:0;text-wrap:balance}
+h1 span{color:var(--neon)}
+.sub{color:var(--muted);margin:6px 0 0}
+.lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+select,input[type=number]{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:7px 10px}
+.hctl{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.hctl>div{display:grid;gap:4px}
+.btn{font:inherit;font-weight:600;font-size:14px;border-radius:10px;padding:8px 14px;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink);display:inline-flex;align-items:center;gap:8px}
+.btn.primary{background:var(--neon);border-color:var(--neon);color:#fff}
+.btn:disabled{opacity:.55;cursor:default}
+.ic{width:16px;height:16px;flex:none}
+.spinning .ic{animation:rot .8s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.fresh{font-size:12px;color:var(--muted)}
+.grid{display:grid;gap:20px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:960px){.grid{grid-template-columns:400px minmax(0,1fr)}.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);align-self:start;max-height:calc(100vh - 24px);overflow:auto}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:14px;min-width:0}
+.side{display:grid;gap:16px;min-width:0}
+.dialhead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.dialhead h2{font-family:var(--display);font-size:20px;margin:0;font-weight:700}
+.rule{font-size:15px;margin:0}
+.rule b{font-family:var(--mono);color:var(--accent);font-size:17px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.ends{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:13px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:5px 11px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+:focus-visible{outline:2px solid var(--neon);outline-offset:2px}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+.row>div{display:grid;gap:4px}
+.toggle{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.toggle input{accent-color:var(--accent);width:16px;height:16px}
+svg text{fill:var(--muted);font-family:var(--mono);font-size:10px}
+.chartnote{font-size:12px;color:var(--muted);margin:0}
+.tabs{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px;width:max-content;max-width:100%}
+.tab{font:inherit;font-weight:600;border:0;background:transparent;color:var(--muted);padding:8px 14px;border-radius:9px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.listhead{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.listhead h2{font-family:var(--display);font-size:22px;margin:0}
+.count{color:var(--muted);font-size:14px}
+ol.list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;grid-template-columns:44px minmax(0,1fr);gap:4px 12px;scroll-margin-top:80px}
+.card.flash{box-shadow:0 0 0 2px var(--neon)}
+.rank{font-family:var(--display);font-weight:800;font-size:28px;line-height:1;color:var(--muted);grid-row:span 4}
+.card:nth-child(-n+3) .rank{color:var(--neon)}
+.top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.name{font-family:var(--display);font-weight:700;font-size:18px;margin:0;text-wrap:balance}
+.meta{color:var(--muted);font-size:13px}
+.stats{display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--mono);font-size:13px;align-items:center;font-variant-numeric:tabular-nums}
+.star{color:var(--warn)}
+.true{background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:1px 7px;font-weight:700}
+.pill{font-family:var(--body);font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:2px 8px;border:1px solid currentColor;white-space:nowrap}
+.open{color:var(--good)} .closed{color:var(--bad)} .unk{color:var(--muted)}
+.badge{background:var(--neon-soft);color:var(--neon);border-color:transparent}
+.svc{color:var(--accent);border-color:transparent;background:var(--accent-soft)}
+.say{margin:4px 0 0;max-width:68ch}
+.dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;font-size:13.5px;margin:4px 0 0}
+.dl dt{color:var(--muted);font-weight:600}
+.dl dd{margin:0}
+.links{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;margin-top:4px}
+.links a{color:var(--accent);font-weight:600;text-decoration:none}
+.links a:hover{text-decoration:underline}
+.why{font-size:12.5px;color:var(--muted)}
+.empty{padding:28px;text-align:center;color:var(--muted)}
+/* Surprise wheel */
+.wheelbox{display:grid;gap:18px;grid-template-columns:minmax(0,1fr)}
+@media(min-width:720px){.wheelbox{grid-template-columns:minmax(0,1fr) 260px}}
+.stage{position:relative;width:100%;max-width:440px;margin:0 auto;aspect-ratio:1}
+.stage canvas{width:100%;height:100%;display:block}
+.pointer{position:absolute;left:50%;top:-6px;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:26px solid var(--ink);filter:drop-shadow(0 2px 2px rgba(0,0,0,.25));z-index:2}
+.hub{position:absolute;inset:0;margin:auto;width:22%;aspect-ratio:1;border-radius:50%;background:var(--panel);border:3px solid var(--ink);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:clamp(13px,3.4vw,18px);cursor:pointer;color:var(--ink)}
+.hub:disabled{cursor:default}
+.wctl{display:grid;gap:12px;align-content:start}
+.pool{font-size:13px;color:var(--muted)}
+.result{position:relative;overflow:hidden;border:2px solid var(--gold);background:var(--panel);border-radius:16px;padding:18px;display:grid;gap:6px}
+.result .lbl{color:var(--gold)}
+.result h3{font-family:var(--display);font-weight:800;font-size:clamp(26px,5vw,36px);line-height:1.05;margin:0;text-wrap:balance}
+.pop{animation:pop .6s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+/* Map */
+.mapwrap{position:relative;height:min(72vh,640px);min-height:420px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--mapbg)}
+#map{position:absolute;inset:0;background:var(--mapbg);font-family:var(--body)}
+.maplegend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted);align-items:center}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:-1px;margin-right:5px}
+.leaflet-container{font:inherit}
+.leaflet-container .leaflet-popup-content-wrapper,.leaflet-container .leaflet-popup-tip{background:var(--panel);color:var(--ink);box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.leaflet-popup-content{margin:12px 14px;line-height:1.4;min-width:220px}
+.leaflet-container a.leaflet-popup-close-button{color:var(--muted)}
+.leaflet-bar a{background:var(--panel);color:var(--ink);border-color:var(--line)}
+.pp h4{font-family:var(--display);font-size:17px;margin:0 0 2px}
+.pp .stats{margin:4px 0}
+.leaflet-container .pp a{color:var(--accent)}
+.leaflet-tooltip{background:var(--panel);color:var(--ink);border-color:var(--line)}
+.rlabel{font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap;background:none;border:0;box-shadow:none;padding:0;text-shadow:0 0 3px var(--mapbg),0 0 3px var(--mapbg)}
+.alabel{font-family:var(--display);font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);opacity:.75;white-space:nowrap;text-shadow:0 0 4px var(--mapbg)}
+.slabel{font-family:var(--display);font-weight:800;font-size:13px;color:var(--neon);white-space:nowrap;text-shadow:0 0 4px var(--mapbg)}
+.mapnote{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);padding:20px;text-align:center}
+.more{justify-self:center}
+.leaflet-control-attribution{background:color-mix(in srgb,var(--panel) 80%,transparent)!important;color:var(--muted)}
+.leaflet-control-attribution a{color:var(--muted)}
+ .live{color:var(--neon);background:var(--neon-soft);border-color:transparent}
+.searchbar{display:flex;gap:8px;align-items:center;flex:1 1 260px;min-width:0}
+.searchbar input{flex:1;min-width:0;font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.livestat{font-size:12.5px;color:var(--muted);margin:0}
+.livestat b{color:var(--ink)}
+#banner{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--accent-soft);color:var(--ink);border:1px solid var(--accent);border-radius:12px;padding:10px 14px}
+#banner .x{background:none;border:0;color:var(--muted);font-size:20px;cursor:pointer;padding:0 4px}
+.qchip{display:inline-flex;gap:6px;align-items:center}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--ink);padding:20px;width:min(520px,calc(100vw - 32px));max-height:85vh}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h2{font-family:var(--display);margin:0 0 6px}
+dialog input[type=password],dialog input[type=text]{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+.set{display:grid;gap:8px;padding-block:12px;border-top:1px solid var(--line)}
+.set:first-of-type{border-top:0}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.youdot{width:16px;height:16px;border-radius:50%;background:#2F7BF6;border:3px solid #fff;box-shadow:0 0 0 6px rgba(47,123,246,.25)}
+.mapbtn{position:absolute;right:10px;bottom:24px;z-index:500}
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+footer{color:var(--muted);font-size:12.5px;max-width:80ch}
+@media(prefers-reduced-motion:reduce){.pop,.spinning .ic{animation:none}}
+</style>
+
+</head><body>
+<canvas id="confetti" aria-hidden="true"></canvas>
+<dialog id="settings" aria-labelledby="seth">
+  <form method="dialog" id="setform" style="display:grid;gap:4px">
+    <h2 id="seth">Settings</h2>
+    <div class="set">
+      <label class="lbl" for="gkey">Google Places API key</label>
+      <input id="gkey" type="password" autocomplete="off" spellcheck="false" placeholder="AIza…">
+      <label class="toggle"><input type="checkbox" id="showkey"> Show key</label>
+      <p class="meta" style="margin:0">Stored only on this phone. Used for live ratings, hours, prices and new places. Google gives roughly 1,000 of these lookups free per month; this app stops at 900 and tells you.</p>
+      <p class="meta" style="margin:0" id="usage"></p>
+      <div class="btnrow"><button class="btn primary" type="button" id="savekey">Save key</button><button class="btn" type="button" id="testkey">Test key</button><button class="btn" type="button" id="delkey">Remove key</button></div>
+      <p class="meta" style="margin:0" id="keymsg" aria-live="polite"></p>
+    </div>
+    <div class="set">
+      <span class="lbl">Live data</span>
+      <label class="toggle"><input type="checkbox" id="autolive" checked> Check Google automatically when I open the app (at most every 30 min)</label>
+      <div class="btnrow"><button class="btn" type="button" id="clearlive">Clear live results</button></div>
+    </div>
+    <div class="set">
+      <span class="lbl">App</span>
+      <p class="meta" style="margin:0" id="ver"></p>
+      <div class="btnrow"><button class="btn" type="button" id="checkupd">Check for updates</button></div>
+    </div>
+    <div class="btnrow" style="justify-content:flex-end;padding-top:8px"><button class="btn" value="close">Close</button></div>
+  </form>
+</dialog>
+<div class="wrap">
+<header>
+  <div>
+    <h1>Worth the <span>Drive</span></h1>
+    <p class="sub">Restaurants ranked by how good they are <em>for how far away they are</em>.</p>
+  </div>
+  <div class="hctl">
+    <div><label class="lbl" for="origin">Starting from</label><select id="origin"></select></div>
+    <div><button class="btn" id="gear" aria-label="Settings" title="Settings"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
+    <div><span class="fresh" id="fresh" aria-live="polite"></span>
+      <button class="btn" id="refresh" title="Pull live ratings, hours and new places, and re-rank"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>Refresh</button></div>
+  </div>
+</header>
+<div id="banner" role="status" hidden></div>
+<div class="row" style="align-items:center">
+  <form class="searchbar" id="sform" role="search"><input id="q" type="search" placeholder="Search restaurants or cuisines (live with a Google key)" aria-label="Search restaurants" autocomplete="off"><button class="btn" type="submit">Search</button></form>
+  <p class="livestat" id="livestat" aria-live="polite"></p>
+</div>
+
+<div class="grid">
+<div class="side">
+  <section class="panel" aria-labelledby="dialh">
+    <div class="dialhead"><h2 id="dialh">The trade-off dial</h2><span class="lbl">rating ⇄ distance</span></div>
+    <p class="rule" id="rule"></p>
+    <input type="range" id="dial" min="0" max="100" step="1" aria-describedby="rule">
+    <div class="ends"><span>Closest wins</span><span>Food is everything</span></div>
+    <div class="chips" role="group" aria-label="Presets">
+      <button class="chip" data-p="12">Hungry now</button>
+      <button class="chip" data-p="45">Balanced</button>
+      <button class="chip" data-p="78">Special trip</button>
+    </div>
+    <svg id="chart" viewBox="0 0 360 220" role="img" aria-label="Trust-adjusted rating versus drive distance"></svg>
+    <p class="chartnote">Each dot is a restaurant. Everything on the dashed line scores the same as your #1, so its slope is the dial: flatter means you'll drive farther for better food. Pink dots are your top 3.</p>
+  </section>
+
+  <section class="panel" aria-label="Filters">
+    <div class="row">
+      <div><label class="lbl" for="sort">Sort by</label>
+        <select id="sort">
+          <option value="smart">Smart score (dial)</option>
+          <option value="true">Trust-adjusted rating</option>
+          <option value="rating">Raw star rating</option>
+          <option value="dist">Distance</option>
+          <option value="reviews">Most reviewed</option>
+        </select></div>
+      <div><label class="lbl" for="maxd">Max miles</label><input type="number" id="maxd" min="1" max="60" value="30" style="width:80px"></div>
+      <div><label class="lbl" for="minr">Min reviews</label><input type="number" id="minr" min="0" step="25" value="0" style="width:90px"></div>
+    </div>
+    <div style="display:grid;gap:6px"><span class="lbl">How you want it</span><div class="chips" id="svc" role="group" aria-label="Service"></div></div>
+    <div style="display:grid;gap:6px"><span class="lbl">Cuisine</span><div class="chips" id="cuis" role="group" aria-label="Cuisine"></div></div>
+    <div style="display:grid;gap:6px"><label class="lbl" for="budget">Budget per person</label>
+      <select id="budget"><option value="15">Up to $15</option><option value="25">Up to $25</option><option value="40">Up to $40</option><option value="60">Up to $60</option><option value="999" selected>Any budget</option></select></div>
+    <label class="toggle"><input type="checkbox" id="opennow"> Open right now (Las Vegas time)</label>
+  </section>
+</div>
+
+<main style="display:grid;gap:14px;min-width:0;align-content:start">
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="t-list" aria-controls="v-list" aria-selected="true">Ranked list</button>
+    <button class="tab" role="tab" id="t-map" aria-controls="v-map" aria-selected="false">Map</button>
+    <button class="tab" role="tab" id="t-wheel" aria-controls="v-wheel" aria-selected="false">🎡 Surprise me</button>
+  </div>
+
+  <section id="v-list" role="tabpanel" aria-labelledby="t-list" style="display:grid;gap:12px">
+    <div class="listhead"><h2 id="lh">Top picks</h2><span class="count" id="count"></span></div>
+    <ol class="list" id="list"></ol>
+    <button class="btn more" id="more" hidden>Show more</button>
+  </section>
+
+  <section id="v-map" role="tabpanel" aria-labelledby="t-map" hidden style="display:grid;gap:10px">
+    <div class="listhead"><h2>Map</h2><span class="count" id="mapcount"></span></div>
+    <div class="mapwrap"><div id="map" aria-label="Map of matching restaurants"></div><button class="btn mapbtn" id="locate" type="button">◎ Me</button></div>
+    <div class="maplegend"><span><span class="dot" style="background:var(--neon)"></span>Your top 3</span><span><span class="dot" style="background:var(--accent)"></span>Matches your filters</span><span><span class="dot" style="background:#2F7BF6"></span>You</span><span><span class="dot" style="background:var(--ink)"></span>Starting point</span><span>Bigger dots score higher. Tap one for details.</span></div>
+  </section>
+
+  <section id="v-wheel" role="tabpanel" aria-labelledby="t-wheel" hidden>
+    <div class="panel">
+      <div class="listhead"><h2>Surprise me</h2><span class="pool" id="pool"></span></div>
+      <div class="wheelbox">
+        <div class="stage">
+          <div class="pointer" aria-hidden="true"></div>
+          <canvas id="wheel" width="880" height="880" aria-label="Prize wheel of restaurants"></canvas>
+          <button class="hub" id="spin" aria-label="Spin the wheel">SPIN</button>
+        </div>
+        <div class="wctl">
+          <p class="meta" style="margin:0">The wheel uses every filter on the left, plus these:</p>
+          <div style="display:grid;gap:4px"><label class="lbl" for="wmax">Within</label>
+            <select id="wmax"><option value="3">3 miles</option><option value="5">5 miles</option><option value="10" selected>10 miles</option><option value="25">Anywhere</option></select></div>
+          <div style="display:grid;gap:4px"><label class="lbl" for="wmin">At least</label>
+            <select id="wmin"><option value="0">Any rating</option><option value="4.3">4.3★ adjusted</option><option value="4.5" selected>4.5★ adjusted</option><option value="4.7">4.7★ adjusted</option></select></div>
+          <div style="display:grid;gap:4px"><label class="lbl" for="wsize">Slots on the wheel</label>
+            <select id="wsize"><option value="6">6</option><option value="8">8</option><option value="12" selected>12</option><option value="99">Everything that fits</option></select></div>
+          <label class="toggle"><input type="checkbox" id="wweight" checked> Better places get bigger slices</label>
+          <label class="toggle"><input type="checkbox" id="wsound" checked> Sound</label>
+          <button class="btn primary" id="spin2">Spin the wheel</button>
+        </div>
+      </div>
+      <div id="result" aria-live="polite"></div>
+    </div>
+  </section>
+</main>
+</div>
+
+<footer>
+  The built-in list covers about 400 places across Las Vegas, Henderson, Summerlin and North Las Vegas, captured from Google Maps on Oct 5, 2026, with Claude's summaries of recent reviews (the one-line takes, “order” and “heads-up” notes). With a Google API key in Settings, Refresh and Search pull live ratings, hours, prices and newly opened places; those get a <b>Live</b> tag. Places Google reports as permanently closed are hidden.
+  <b>Trust-adjusted rating</b> pulls places with few reviews toward the local average (4.4★). <b>Drive-thru</b> means reviews mention one; <b>Drive-thru?</b> means it's a chain that usually has one. <b>Grab &amp; go</b> marks counter-service spots.
+  <b>Budget</b> uses Google's per-person price range when it has one, otherwise its $–$$$$ level ($ ≈ $10–20, $$ ≈ $20–30, $$$ ≈ $30–50, $$$$ ≈ $50+); “est.” means Claude estimated it. Distances are straight-line × 1.25 as a rough driving estimate. Map © OpenStreetMap contributors © CARTO.
+</footer>
+</div>
+
+<script src="leaflet.js"></script>
+</body></html>
+<script>
+let DATA = [];
+const CAPTURED = new Date("2026-10-05T13:45:00-07:00");
+const ORIGINS = [
+  {k:"me",n:"My location",lat:null,lng:null},
+  {k:"sw",n:"Southwest · Durango & Blue Diamond",lat:36.0395,lng:-115.2790},
+  {k:"durango",n:"Durango Casino",lat:36.0629,lng:-115.2818},
+  {k:"chinatown",n:"Chinatown · Spring Mtn",lat:36.1260,lng:-115.1980},
+  {k:"strip",n:"Center Strip",lat:36.1147,lng:-115.1728},
+  {k:"summerlin",n:"Summerlin · Rampart",lat:36.1720,lng:-115.2870},
+  {k:"henderson",n:"Henderson · Green Valley",lat:36.0360,lng:-115.0830},
+  {k:"downtown",n:"Downtown · Fremont St",lat:36.1700,lng:-115.1420},
+  {k:"nlv",n:"North Las Vegas · Craig Rd",lat:36.2390,lng:-115.1500},
+];
+function origin(){const o=ORIGINS.find(x=>x.k===st.origin)||ORIGINS[1];if(o.k==="me"&&o.lat==null)return Object.assign({},ORIGINS[1],{k:"me",n:"My location (finding you…)"});return o}
+const CATS = [
+  ["Mexican",/mexican|taco|birria|oaxacan|jalisco|sinaloan|carnitas/i],["Japanese",/japanese|ramen|sushi|izakaya|katsu|sando|yakitori|teppanyaki/i],
+  ["Chinese",/chinese|dumpling|dim sum|cantonese|sichuan|taiwanese/i],["Korean",/korean/i],["Thai",/thai/i],["Vietnamese",/vietnam/i],
+  ["Filipino & Hawaiian",/filipino|hawaiian|poke/i],["Indian",/indian/i],["Mediterranean & Greek",/mediterranean|greek|turkish|lebanese|bulgarian/i],
+  ["Latin & Peruvian",/peruvian|salvadoran|latin/i],["Italian",/italian/i],["Steak & Seafood",/steak|seafood|cajun|oyster/i],
+  ["BBQ & Soul",/(^|· )BBQ|soul|southern/i],["Chicken",/chicken/i],["Burgers & Pizza",/burger|pizza|hot dog|wings/i],
+  ["Breakfast & Brunch",/breakfast|brunch|diner/i],["Coffee & Dessert",/coffee|café|cafe|bakery|dessert/i],["Vegan",/vegan/i],
+  ["Buffets & Food halls",/buffet|food hall|AYCE/i],["Bars & Pubs",/pub|bar\b|tavern|gastropub|lounge|cantina/i],
+];
+const LOW={1:10,2:20,3:30,4:50},BAND={1:"$10–20",2:"$20–30",3:"$30–50",4:"$50+"};
+const lowOf=p=>p.bmin!=null?p.bmin:(LOW[p.pr]??20);
+const budgetTxt=p=>p.bmin!=null?`$${p.bmin}${p.bmax!=null?"–"+p.bmax:"+"}/person`:`${BAND[p.pr]||"$20–30"}/person${p.pe?" (est.)":""}`;
+const SVC=[["dt","Drive-thru"],["counter","Grab & go"],["sit","Sit-down"]];
+const PRIOR=4.4, M=100, ROAD=1.25;
+const $=s=>document.querySelector(s);
+const store={get(k,d){try{const v=localStorage.getItem("wtd_"+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem("wtd_"+k,JSON.stringify(v))}catch(e){}}};
+
+let st={dial:store.get("dial",45),origin:store.get("origin","me"),q:"",qIds:new Set(),sort:"smart",maxd:25,minr:0,cats:new Set(),svc:new Set(),budget:999,open:false,shown:50,checked:new Date()};
+
+function reindex(){DATA.forEach((p,i)=>{p.i=i;p.cats=CATS.filter(([,re])=>re.test(p.c)).map(([n])=>n);
+  p.adj=(p.v/(p.v+M))*p.r+(M/(p.v+M))*PRIOR;});}
+
+const mpt=d=>0.15*Math.pow(80,d/100); // miles per +0.1★, log dial
+function hav(a,b,c,d){const R=3958.8,t=x=>x*Math.PI/180;const dl=t(c-a),dn=t(d-b);
+  const h=Math.sin(dl/2)**2+Math.cos(t(a))*Math.cos(t(c))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h));}
+
+function vegasNow(){const f=new Intl.DateTimeFormat("en-US",{timeZone:"America/Los_Angeles",weekday:"short",hour:"numeric",minute:"numeric",hour12:false}).formatToParts(new Date());
+  const g=t=>f.find(x=>x.type===t).value;const days=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  return {day:days.indexOf(g("weekday")),min:(+g("hour")%24)*60+ +g("minute")};}
+function tm(s,mer){const m=s.trim().match(/(\d+):(\d+)\s*(AM|PM)?/);if(!m)return null;let h=+m[1]%12;const ap=m[3]||mer;if(ap==="PM")h+=12;return h*60+ +m[2];}
+function ranges(str){if(!str)return null;if(/24 hours/i.test(str))return[[0,1440]];if(/closed/i.test(str))return[];
+  return str.split(",").map(part=>{const [a,b]=part.split("–");const mer=(b.match(/AM|PM/)||[])[0];let s=tm(a,mer),e=tm(b,mer);
+    if(s!=null&&e!=null&&!/AM|PM/.test(a)&&s>e)s-=720; if(e<=s)e+=1440;return[s,e]});}
+const dayStr=(p,d)=>p.h[d].split(": ").slice(1).join(": ");
+function openState(p){if(p.tmp)return false;if(p.liveOpen!=null&&Date.now()-p.live<45*60e3)return p.liveOpen;if(!p.h||p.h.length!==7)return null;const {day,min}=vegasNow();
+  if((ranges(dayStr(p,day))||[]).some(([s,e])=>min>=s&&min<e))return true;
+  if((ranges(dayStr(p,(day+6)%7))||[]).some(([s,e])=>e>1440&&min<e-1440))return true;return false;}
+function todayHours(p){if(!p.h||p.h.length!==7)return"";return dayStr(p,vegasNow().day);}
+
+function compute(){const o=origin();const k=mpt(st.dial);
+  DATA.forEach(p=>{p.d=hav(o.lat,o.lng,p.lat,p.lng)*ROAD;p.score=p.adj*10-p.d/k;p.isOpen=openState(p);});}
+
+const svcMatch=p=>!st.svc.size||(st.svc.has("dt")&&p.dt>0)||(st.svc.has("counter")&&p.m==="counter")||(st.svc.has("sit")&&p.m==="sit");
+const qMatch=p=>!st.q||st.qIds.has(p.id)||(p.n+" "+p.c+" "+p.a).toLowerCase().includes(st.q.toLowerCase());
+function filtered(){return DATA.filter(p=>!p.closed&&qMatch(p)&&(st.q&&st.qIds.has(p.id)||p.d<=st.maxd)&&p.v>=st.minr&&svcMatch(p)&&
+  (!st.cats.size||p.cats.some(c=>st.cats.has(c)))&&
+  lowOf(p)<st.budget&&(!st.open||p.isOpen));}
+function sorted(arr,how=st.sort){const f={smart:(a,b)=>b.score-a.score,true:(a,b)=>b.adj-a.adj,rating:(a,b)=>b.r-a.r||b.v-a.v,dist:(a,b)=>a.d-b.d,reviews:(a,b)=>b.v-a.v}[how];return arr.slice().sort(f);}
+function frontier(arr){const s=new Set();arr.forEach(p=>{if(!arr.some(q=>q!==p&&q.d<=p.d&&q.adj>=p.adj&&(q.d<p.d||q.adj>p.adj)))s.add(p.i)});return s;}
+
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const price=p=>p==null?"":"$".repeat(p);
+const mapsUrl=p=>p.gurl||`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.n+" "+p.a)}&query_place_id=${p.id}`;
+const dirUrl=p=>`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(p.n+" "+p.a)}&destination_place_id=${p.id}`;
+const openPill=p=>p.tmp?'<span class="pill closed">Temporarily closed</span>':p.isOpen==null?'<span class="pill unk">Hours n/a</span>':p.isOpen?'<span class="pill open">Open</span>':'<span class="pill closed">Closed</span>';
+const svcPills=p=>(p.live?`<span class="pill live" title="Updated from Google ${ago(p.live)}">${p.isNew?"New · Live":"Live"}</span>`:"")+(p.dt===2?'<span class="pill svc">Drive-thru</span>':p.dt===1?'<span class="pill svc" title="Listed for drive-thru; not confirmed in reviews">Drive-thru?</span>':"")+(p.m==="counter"?'<span class="pill svc">Grab &amp; go</span>':"");
+
+function render(){compute();const k=mpt(st.dial);
+  $("#rule").innerHTML=`I'll drive <b>${k<1?k.toFixed(2):k.toFixed(1)} extra miles</b> for every <b>+0.1★</b>.<br><span class="meta">So a place rated half a star higher is worth ${(k*5).toFixed(1)} more miles.</span>`;
+  document.querySelectorAll("[data-p]").forEach(b=>b.setAttribute("aria-pressed",Math.abs(+b.dataset.p-st.dial)<3));
+  const vis=filtered(),list=sorted(vis),fr=frontier(vis);
+  $("#count").innerHTML=`${list.length} of ${DATA.length} places`+(st.q?` · <span class="qchip">“${esc(st.q)}” <button class="chip" id="clrq">Clear search</button></span>`:"");
+  if(st.q)$("#clrq").onclick=()=>{$("#q").value="";liveSearch("")};
+  $("#lh").textContent={smart:"Top picks for your dial",true:"Best food, trust-adjusted",rating:"Highest star rating",dist:"Closest first",reviews:"Most reviewed"}[st.sort];
+  drawChart(vis,new Set(sorted(vis,"smart").slice(0,3).map(p=>p.i)),k);
+  const best=list[0];
+  const more=$("#more");more.hidden=list.length<=st.shown;more.textContent=`Show ${Math.min(50,list.length-st.shown)} more`;
+  $("#list").innerHTML=list.length?list.slice(0,st.shown).map((p,n)=>{
+    let why="";
+    if(st.sort==="smart"&&n>0&&best)why=`<div class="why">Would need to be ${((best.score-p.score)*k).toFixed(1)} mi closer (or ${((best.score-p.score)/10).toFixed(2)}★ better) to tie #1.</div>`;
+    if(st.sort==="smart"&&n===0&&list[1])why=`<div class="why">Leads #2 by the equivalent of ${((p.score-list[1].score)*k).toFixed(1)} miles.</div>`;
+    return `<li class="card" id="p${p.i}"><div class="rank">${n+1}</div>
+      <div class="top"><h3 class="name">${esc(p.n)}</h3><div class="chips">${fr.has(p.i)?'<span class="pill badge" title="Nothing visible is both closer and better">No-brainer</span>':""}${svcPills(p)}${openPill(p)}</div></div>
+      <div class="meta">${esc(p.c)} · ${budgetTxt(p)} · ${esc(p.a)}</div>
+      <div class="stats"><span><span class="star">★</span> ${p.r.toFixed(1)} <span class="meta">(${p.v.toLocaleString()})</span></span><span class="true" title="Trust-adjusted rating">${p.adj.toFixed(2)} adj</span><span>~${p.d.toFixed(1)} mi</span>${todayHours(p)?`<span class="meta">Today ${esc(todayHours(p))}</span>`:""}</div>
+      <div style="grid-column:2"><p class="say">${esc(p.s)}</p>
+      <dl class="dl"><dt>Order</dt><dd>${esc(p.o)}</dd>${p.w&&p.w!=="None that repeat"?`<dt>Heads-up</dt><dd>${esc(p.w)}</dd>`:""}</dl>
+      ${why}<div class="links"><a href="${dirUrl(p)}" target="_blank" rel="noopener">Directions</a><a href="${mapsUrl(p)}" target="_blank" rel="noopener">All reviews on Google</a></div></div></li>`}).join("")
+    :`<li class="empty">Nothing matches. Raise the max miles or clear a filter.</li>`;
+  freshness();
+  if(!spinning)buildWheel();
+  updateMap(vis,new Set(sorted(vis,"smart").slice(0,3).map(p=>p.i)));
+}
+
+function drawChart(vis,top3,k){const W=360,H=220,L=34,R=10,T=10,B=28;
+  const maxD=Math.max(5,Math.ceil(Math.max(...vis.map(p=>p.d),1)/5)*5);const minA=4.1,maxA=5.0;
+  const x=d=>L+(d/maxD)*(W-L-R),y=a=>T+(1-(Math.min(Math.max(a,minA),maxA)-minA)/(maxA-minA))*(H-T-B);
+  let s=`<defs><clipPath id="cp"><rect x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}"/></clipPath></defs><rect x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="none" stroke="var(--line)"/>`;
+  for(let a=4.2;a<=5.001;a+=0.2)s+=`<line x1="${L}" x2="${W-R}" y1="${y(a)}" y2="${y(a)}" stroke="var(--line)" stroke-dasharray="2 3"/><text x="${L-4}" y="${y(a)+3}" text-anchor="end">${a.toFixed(1)}</text>`;
+  const step=maxD<=10?2:5;for(let d=0;d<=maxD;d+=step)s+=`<text x="${x(d)}" y="${H-B+13}" text-anchor="middle">${d}</text>`;
+  s+=`<text x="${(L+W-R)/2}" y="${H-3}" text-anchor="middle">miles (est. drive)</text>`;
+  const best=sorted(vis,"smart")[0];
+  if(best){const a0=best.adj-best.d/(10*k),a1=best.adj+(maxD-best.d)/(10*k);
+    s+=`<line clip-path="url(#cp)" x1="${x(0)}" y1="${y(a0)}" x2="${x(maxD)}" y2="${y(a1)}" stroke="var(--neon)" stroke-width="1.5" stroke-dasharray="5 4"/>`;}
+  vis.forEach(p=>{const hot=top3.has(p.i);s+=`<circle cx="${x(p.d)}" cy="${y(p.adj)}" r="${hot?6:4}" fill="${hot?"var(--neon)":"var(--accent)"}" fill-opacity="${hot?1:.55}" stroke="var(--panel)" stroke-width="1" data-i="${p.i}" style="cursor:pointer"><title>${esc(p.n)} · ${p.adj.toFixed(2)} adj · ${p.d.toFixed(1)} mi</title></circle>`});
+  $("#chart").innerHTML=s;
+}
+
+function freshness(){const mins=Math.round((Date.now()-st.checked)/60000);
+  $("#fresh").textContent=`Open status checked ${mins<1?"just now":mins+" min ago"}`;}
+
+/* ---------- Surprise wheel ---------- */
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let wheelItems=[],angle=0,spinning=false,ac=null;
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function wheelPool(){const max=+$("#wmax").value,min=+$("#wmin").value,size=+$("#wsize").value;
+  const pool=sorted(filtered().filter(p=>p.d<=max&&p.adj>=min),"smart");return {all:pool,pick:pool.slice(0,size)};}
+function buildWheel(){const {all,pick}=wheelPool();const w=$("#wweight").checked;
+  wheelItems=pick.map(p=>({p,wt:w?Math.max(0.4,Math.pow(Math.max(p.score-(pick[pick.length-1]?.score??0),0)+3,1.15)):1}));
+  const tot=wheelItems.reduce((a,b)=>a+b.wt,0);let acc=0;wheelItems.forEach(it=>{it.a0=acc/tot*Math.PI*2;acc+=it.wt;it.a1=acc/tot*Math.PI*2});
+  $("#pool").textContent=all.length?`${pick.length} on the wheel${all.length>pick.length?` (best ${pick.length} of ${all.length} that fit)`:""}`:"";
+  [$("#spin"),$("#spin2")].forEach(b=>b.disabled=!wheelItems.length);
+  drawWheel();}
+function drawWheel(){const c=$("#wheel"),g=c.getContext("2d"),S=c.width,R=S/2-8;g.clearRect(0,0,S,S);
+  if(!wheelItems.length){g.fillStyle=css("--line");g.beginPath();g.arc(S/2,S/2,R,0,7);g.fill();g.fillStyle=css("--muted");g.font=`600 34px ${css("--body")}`;g.textAlign="center";g.fillText("Nothing fits your constraints",S/2,S/2-150);g.fillText("Loosen a filter",S/2,S/2+170);return;}
+  const pal=[css("--neon"),css("--accent"),css("--gold"),css("--ink"),"#5A6BD8","#E0703A"];
+  g.save();g.translate(S/2,S/2);g.rotate(angle);
+  const n=wheelItems.length;
+  wheelItems.forEach((it,i)=>{let ci=i%pal.length;if(i===n-1&&n>1&&ci===0)ci=2; // never two same colors side by side at the seam
+    g.beginPath();g.moveTo(0,0);g.arc(0,0,R,it.a0-Math.PI/2,it.a1-Math.PI/2);g.closePath();
+    g.fillStyle=pal[ci];g.fill();g.strokeStyle=css("--panel");g.lineWidth=4;g.stroke();
+    const mid=(it.a0+it.a1)/2-Math.PI/2,span=it.a1-it.a0;g.save();g.rotate(mid);g.textAlign="right";g.textBaseline="middle";
+    g.fillStyle=ci===3?css("--bg"):"#fff";
+    const fs=Math.max(18,Math.min(34,span*R*0.42));g.font=`700 ${fs}px ${css("--display")}`;
+    let t=it.p.n.replace(/\s*[\(|–-].*$/,"").replace(/ Restaurant.*$/,"");while(g.measureText(t).width>R*0.66&&t.length>4)t=t.slice(0,-2);if(t!==it.p.n.replace(/\s*[\(|–-].*$/,"").replace(/ Restaurant.*$/,""))t=t.trim()+"…";
+    if(ci!==3){g.lineWidth=5;g.lineJoin="round";g.strokeStyle="rgba(0,0,0,.35)";g.strokeText(t,R-26,0);}
+    g.fillText(t,R-26,0);g.restore();});
+  g.restore();g.beginPath();g.arc(S/2,S/2,R,0,7);g.strokeStyle=css("--ink");g.lineWidth=6;g.stroke();
+  for(let i=0;i<36;i++){const a=i/36*Math.PI*2;g.beginPath();g.arc(S/2+Math.cos(a)*(R-1),S/2+Math.sin(a)*(R-1),5,0,7);g.fillStyle=i%2?css("--gold"):"#fff";g.fill();}
+}
+function audio(){if(!$("#wsound").checked)return null;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume();return ac}catch(e){return null}}
+function tick(){const a=audio();if(!a)return;const o=a.createOscillator(),g=a.createGain();o.type="square";o.frequency.value=1800;g.gain.setValueAtTime(.05,a.currentTime);g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+.04);o.connect(g).connect(a.destination);o.start();o.stop(a.currentTime+.05);}
+function fanfare(){const a=audio();if(!a)return;const t0=a.currentTime+.05;
+  const notes=[[523.25,0,.14],[659.25,.15,.14],[783.99,.3,.14],[1046.5,.45,.5],[783.99,.75,.12],[1046.5,.88,.8]];
+  notes.forEach(([f,t,d])=>{[1,1.005].forEach((det,k)=>{const o=a.createOscillator(),g=a.createGain();o.type=k?"sawtooth":"square";o.frequency.value=f*det;
+    g.gain.setValueAtTime(0,t0+t);g.gain.linearRampToValueAtTime(.07,t0+t+.02);g.gain.setValueAtTime(.07,t0+t+d-.05);g.gain.exponentialRampToValueAtTime(.0001,t0+t+d+.15);
+    o.connect(g).connect(a.destination);o.start(t0+t);o.stop(t0+t+d+.2);});});}
+function confetti(){if(reduce)return;const c=$("#confetti"),g=c.getContext("2d");c.width=innerWidth*devicePixelRatio;c.height=innerHeight*devicePixelRatio;g.scale(devicePixelRatio,devicePixelRatio);
+  const cols=[css("--neon"),css("--accent"),css("--gold"),"#5A6BD8","#E0703A"];const ps=[];
+  for(let i=0;i<180;i++){const side=i%2;ps.push({x:side?innerWidth+10:-10,y:innerHeight*.75,vx:(side?-1:1)*(4+Math.random()*9),vy:-(8+Math.random()*12),r:Math.random()*6.28,vr:(Math.random()-.5)*.3,w:6+Math.random()*6,h:8+Math.random()*10,c:cols[i%cols.length]})}
+  const t0=performance.now();(function f(t){g.clearRect(0,0,innerWidth,innerHeight);ps.forEach(p=>{p.vy+=.35;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;g.save();g.translate(p.x,p.y);g.rotate(p.r);g.fillStyle=p.c;g.fillRect(-p.w/2,-p.h/2,p.w,p.h*Math.abs(Math.cos(p.r*2)));g.restore()});
+    if(t-t0<3500)requestAnimationFrame(f);else g.clearRect(0,0,innerWidth,innerHeight)})(t0);}
+function spin(){if(spinning||!wheelItems.length)return;audio();spinning=true;[$("#spin"),$("#spin2")].forEach(b=>b.disabled=true);$("#result").innerHTML="";
+  const tot=wheelItems.reduce((a,b)=>a+b.wt,0);let r=Math.random()*tot,win=wheelItems[0];for(const it of wheelItems){if((r-=it.wt)<=0){win=it;break}}
+  const inside=win.a0+(win.a1-win.a0)*(0.15+Math.random()*0.7);
+  const start=angle,turns=reduce?1:6+Math.floor(Math.random()*3);
+  const target=(Math.ceil(start/(2*Math.PI))+turns)*2*Math.PI-inside;const dur=reduce?900:5200;const t0=performance.now();
+  let lastSeg=-1;const segAt=a=>{const pos=((-a)%(2*Math.PI)+2*Math.PI)%(2*Math.PI);return wheelItems.findIndex(it=>pos>=it.a0&&pos<it.a1)};
+  (function f(t){const k=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-k,4);angle=start+(target-start)*e;drawWheel();
+    const s=segAt(angle);if(s!==lastSeg){lastSeg=s;tick()}
+    if(k<1)requestAnimationFrame(f);else{spinning=false;[$("#spin"),$("#spin2")].forEach(b=>b.disabled=false);reveal(win.p)}})(t0);}
+function reveal(p){fanfare();confetti();
+  $("#result").innerHTML=`<div class="result pop"><span class="lbl">🎉 The wheel has spoken</span><h3>${esc(p.n)}</h3>
+    <div class="meta">${esc(p.c)} · ${budgetTxt(p)} · ~${p.d.toFixed(1)} mi · ${esc(p.a)}</div>
+    <div class="stats"><span><span class="star">★</span> ${p.r.toFixed(1)} <span class="meta">(${p.v.toLocaleString()})</span></span><span class="true">${p.adj.toFixed(2)} adj</span>${svcPills(p)}${openPill(p)}</div>
+    <p class="say">${esc(p.s)}</p><dl class="dl"><dt>Order</dt><dd>${esc(p.o)}</dd></dl>
+    <div class="links" style="font-size:15px"><a href="${dirUrl(p)}" target="_blank" rel="noopener">Take me there →</a><a href="${mapsUrl(p)}" target="_blank" rel="noopener">See reviews</a><a href="#" id="again">Spin again</a></div></div>`;
+  $("#again").onclick=e=>{e.preventDefault();spin()};}
+
+/* ---------- Map ---------- */
+let map=null,mapLayers=null,baseLayers=null,originLayer=null,lastFit="";
+let tiles=null,meLayer=null;
+const darkMode=()=>matchMedia("(prefers-color-scheme: dark)").matches;
+function initMap(){if(map)return;if(!window.L){$("#map").innerHTML='<div class="mapnote">The map didn\'t load. Check your connection and reopen this tab.</div>';return}
+  map=L.map("map",{zoomControl:true,attributionControl:true,minZoom:3,maxZoom:19,preferCanvas:true}).setView([36.11,-115.18],11);
+  map.attributionControl.setPrefix(false);
+  baseLayers=L.layerGroup().addTo(map);mapLayers=L.layerGroup().addTo(map);originLayer=L.layerGroup().addTo(map);
+  drawBase();matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>{drawBase();render()});
+  $("#locate").onclick=()=>{const me=ORIGINS[0];if(me.lat==null){startGPS();setLive("Finding your location…");return}map.setView([me.lat,me.lng],14)};}
+function drawBase(){if(!map)return;if(tiles)map.removeLayer(tiles);
+  tiles=L.tileLayer(`https://{s}.basemaps.cartocdn.com/${darkMode()?"dark_all":"rastertiles/voyager"}/{z}/{x}/{y}{r}.png`,{subdomains:"abcd",maxZoom:20,detectRetina:true,
+    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>'}).addTo(map);tiles.bringToBack();}
+function popupHtml(p,rank){return `<div class="pp"><span class="lbl">#${rank} · ${esc(p.c)}</span><h4>${esc(p.n)}</h4>
+  <div class="stats"><span><span class="star">★</span> ${p.r.toFixed(1)} <span class="meta">(${p.v.toLocaleString()})</span></span><span class="true">${p.adj.toFixed(2)} adj</span><span>~${p.d.toFixed(1)} mi</span></div>
+  <div class="chips" style="margin:2px 0 6px">${svcPills(p)}${openPill(p)}</div>
+  <div class="meta">${budgetTxt(p)}</div><p class="say" style="font-size:13.5px;margin:6px 0">${esc(p.s)}</p>
+  <div class="meta"><b>Order:</b> ${esc(p.o)}</div>
+  <div class="links"><a href="${dirUrl(p)}" target="_blank" rel="noopener">Directions</a><a href="${mapsUrl(p)}" target="_blank" rel="noopener">Reviews</a><a href="#" data-goto="${p.i}">In list</a></div></div>`}
+function updateMap(vis,top3){if(!map)return;mapLayers.clearLayers();originLayer.clearLayers();
+  const ranked=sorted(vis,"smart"),rank=new Map(ranked.map((p,n)=>[p.i,n+1]));
+  const acc=css("--accent"),neon=css("--neon"),panel=css("--panel"),ink=css("--ink");
+  const hi=ranked[0]?.score??0,lo=ranked[ranked.length-1]?.score??0;
+  ranked.slice().reverse().forEach(p=>{const hot=top3.has(p.i);const t=hi>lo?(p.score-lo)/(hi-lo):1;
+    L.circleMarker([p.lat,p.lng],{radius:hot?10:4+t*5,color:panel,weight:1.5,fillColor:hot?neon:acc,fillOpacity:hot?1:.45+t*.45})
+      .bindPopup(()=>popupHtml(p,rank.get(p.i)),{maxWidth:280}).bindTooltip(esc(p.n),{direction:"top",offset:[0,-6]}).addTo(mapLayers)});
+  const o=origin(),me=ORIGINS[0];
+  if(o.k!=="me")L.circleMarker([o.lat,o.lng],{radius:8,color:panel,weight:3,fillColor:ink,fillOpacity:1}).bindTooltip("Start: "+o.n).addTo(originLayer);
+  if(me.lat!=null){if(me.acc&&me.acc<2000)L.circle([me.lat,me.lng],{radius:me.acc,color:"#2F7BF6",weight:1,fillOpacity:.08,interactive:false}).addTo(originLayer);
+    L.marker([me.lat,me.lng],{icon:L.divIcon({className:"",html:'<div class="youdot"></div>',iconSize:[16,16]}),keyboard:false}).bindTooltip("You").addTo(originLayer)}
+  $("#mapcount").textContent=`${vis.length} places · starting from ${o.n}`;
+  const key=st.origin+"|"+vis.length;if(key!==lastFit&&vis.length){lastFit=key;const b=L.latLngBounds(ranked.slice(0,25).map(p=>[p.lat,p.lng]).concat([[o.lat,o.lng]]));map.fitBounds(b.pad(.15),{maxZoom:14})}}
+document.addEventListener("click",e=>{const a=e.target.closest("[data-goto]");if(!a)return;e.preventDefault();goTo(+a.dataset.goto)});
+function goTo(i){showTab("list");const list=sorted(filtered()),n=list.findIndex(p=>p.i===i);if(n>=st.shown){st.shown=Math.ceil((n+1)/50)*50;render()}
+  const el=document.getElementById("p"+i);if(el){el.scrollIntoView({behavior:reduce?"auto":"smooth",block:"center"});el.classList.add("flash");setTimeout(()=>el.classList.remove("flash"),1400)}}
+
+/* ---------- Native bridge + HTTP ---------- */
+const pend={};let rid=0;
+window.__nativeResp=(id,status,text)=>{const f=pend[id];if(f){delete pend[id];f({status,text})}};
+const isApp=!!(window.Native&&Native.request);
+function http(method,url,headers={},body=""){
+  if(isApp)return new Promise(res=>{const id="r"+(++rid);pend[id]=res;Native.request(id,method,url,JSON.stringify(headers),body||"")});
+  return fetch(url,{method,headers,body:body||undefined}).then(async r=>({status:r.status,text:await r.text()})).catch(e=>({status:0,text:String(e)}));}
+const pj=t=>{try{return JSON.parse(t)}catch(e){return{}}};
+function openUrl(u){if(isApp)Native.openExternal(u);else window.open(u,"_blank","noopener")}
+
+/* ---------- Banner ---------- */
+function banner(text,label,fn){const b=$("#banner");b.innerHTML=`<span>${esc(text)}</span><span class="btnrow">${label?`<button class="btn primary" id="bnbtn">${esc(label)}</button>`:""}<button class="x" id="bnx" aria-label="Dismiss">×</button></span>`;b.hidden=false;
+  if(label)$("#bnbtn").onclick=fn;$("#bnx").onclick=()=>{b.hidden=true}}
+window.onWebUpdated=()=>banner("New app content was downloaded from GitHub.","Reload",()=>location.reload());
+async function checkRelease(manual){if(!isApp)return manual&&banner("Updates are checked inside the Android app.");const repo=Native.repo();if(!repo)return manual&&banner("This build isn't linked to a GitHub repo.");
+  const r=await http("GET",`https://api.github.com/repos/${repo}/releases/latest`,{"Accept":"application/vnd.github+json"});
+  if(r.status!==200){if(manual)banner("Couldn't reach GitHub to check for updates.");return}
+  const j=pj(r.text),n=+((String(j.tag_name||"").match(/\d+/)||[0])[0]);
+  if(n>Native.versionCode()){const a=(j.assets||[]).find(x=>/\.apk$/i.test(x.name));banner(`App update available (build ${n}). Download it, then open the file to install.`,"Download",()=>openUrl(a?a.browser_download_url:j.html_url))}
+  else if(manual)banner(`You're on the latest app build (${Native.versionCode()}). Content updates download automatically.`);}
+
+/* ---------- Live Google Places ---------- */
+const FIELDS="places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.priceLevel,places.priceRange,places.primaryTypeDisplayName,places.types,places.regularOpeningHours.weekdayDescriptions,places.currentOpeningHours.openNow,places.takeout,places.dineIn,places.googleMapsUri,places.businessStatus";
+const PL={PRICE_LEVEL_FREE:1,PRICE_LEVEL_INEXPENSIVE:1,PRICE_LEVEL_MODERATE:2,PRICE_LEVEL_EXPENSIVE:3,PRICE_LEVEL_VERY_EXPENSIVE:4};
+const CHAINS=/In-N-Out|Raising Cane|Chick-fil-A|Roberto's|Panda Express|Del Taco|Popeyes|Farmer Boys|Starbucks|Jack in the Box|Taco Bell|McDonald|Burger King|Wendy|Carl's Jr|Habit Burger|Freddy's|Zaxby|Bojangles|Rivas|Dutch Bros|Sonic Drive|Whataburger|KFC|El Pollo Loco|Jollibee|Wienerschnitzel|Arby/i;
+const CAP=900;
+const gkey=()=>store.get("gkey","");
+function usage(){const m=new Date().toISOString().slice(0,7);const u=store.get("usage",{m,n:0});return u.m===m?u:{m,n:0}}
+function bump(){const u=usage();u.n++;store.set("usage",u)}
+let LIVE=store.get("live",{});
+function setLive(t){$("#livestat").innerHTML=t}
+function mapPlace(g){const rng=g.priceRange||{},lo=rng.startPrice?.units,hi=rng.endPrice?.units;
+  return {id:g.id,n:g.displayName?.text||"Unnamed",c:g.primaryTypeDisplayName?.text||"Restaurant",a:(g.formattedAddress||"").replace(/, USA$/,""),
+    lat:g.location?.latitude,lng:g.location?.longitude,r:g.rating||0,v:g.userRatingCount||0,pr:PL[g.priceLevel]??null,
+    bmin:lo!=null?+lo:null,bmax:hi!=null?+hi:null,h:(g.regularOpeningHours?.weekdayDescriptions||[]).map(x=>x.replace(/[  ]/g," ")),
+    liveOpen:g.currentOpeningHours?.openNow??null,live:Date.now(),dineIn:g.dineIn,takeout:g.takeout,
+    gurl:g.googleMapsUri,closed:g.businessStatus==="CLOSED_PERMANENTLY",tmp:g.businessStatus==="CLOSED_TEMPORARILY"}}
+function applyLive(o){if(o.lat==null)return;let p=DATA.find(x=>x.id===o.id);
+  if(p){Object.assign(p,{gurl:o.gurl||p.gurl,r:o.r||p.r,v:o.v||p.v,liveOpen:o.liveOpen,live:o.live,closed:o.closed,tmp:o.tmp});if(o.h.length===7)p.h=o.h;if(o.pr){p.pr=o.pr;p.pe=0}if(o.bmin!=null){p.bmin=o.bmin;p.bmax=o.bmax}}
+  else DATA.push(Object.assign({},o,{s:"New from live Google results. No review summary yet.",o:"Check the reviews on Google",w:"",
+    m:(o.dineIn===false||/fast food|sandwich|coffee|bakery|takeout|food court/i.test(o.c))?"counter":"sit",dt:CHAINS.test(o.n)?1:0,pe:o.pr||o.bmin!=null?0:1,pr:o.pr||2,isNew:1}))}
+function ingest(list){list.forEach(g=>{const o=mapPlace(g);LIVE[o.id]=o;applyLive(o)});
+  const ids=Object.keys(LIVE);if(ids.length>800){ids.sort((a,b)=>LIVE[a].live-LIVE[b].live).slice(0,ids.length-800).forEach(k=>delete LIVE[k])}
+  store.set("live",LIVE);reindex();return list.map(g=>g.id)}
+async function gsearch(kind,body){const k=gkey();if(!k)throw new Error("nokey");if(usage().n>=CAP)throw new Error("cap");bump();
+  const r=await http("POST","https://places.googleapis.com/v1/places:"+kind,{"Content-Type":"application/json","X-Goog-Api-Key":k,"X-Goog-FieldMask":FIELDS},JSON.stringify(body));
+  const j=pj(r.text);if(r.status!==200)throw new Error(j.error?.message||(r.status?"HTTP "+r.status:"No connection"));return j.places||[]}
+function liveErr(e){const m=String(e.message||e);if(m==="nokey")return'Built-in list from Oct 5. <a href="#" id="addkey">Add a Google key</a> for live ratings and new places.';
+  if(m==="cap")return"Live lookups paused: 900 used this month (Google's free tier is about 1,000).";return"Google lookup failed: "+esc(m)}
+const ago=t=>{const m=Math.round((Date.now()-t)/60000);return m<1?"just now":m<60?m+" min ago":Math.round(m/60)+" h ago"};
+let gpsFailed=false;
+async function liveRefresh(manual){if(st.origin==="me"&&ORIGINS[0].lat==null&&!gpsFailed&&!manual)return;const o=origin();if(o.lat==null)return;const radius=Math.max(1000,Math.min(50000,Math.round(st.maxd*1609/ROAD)));
+  const ck=[o.lat.toFixed(2),o.lng.toFixed(2),radius,[...st.cats].join()].join("|"),last=store.get("lastLive",{});
+  if(!gkey()){setLive(liveErr(new Error("nokey")));return}
+  if(!manual&&(!store.get("autolive",true)||(last.k===ck&&Date.now()-last.t<30*60e3))){if(last.t)setLive(`Live data from Google, ${ago(last.t)}.`);return}
+  setLive("Checking Google…");
+  try{let got=[];const circle={center:{latitude:o.lat,longitude:o.lng},radius};
+    if(st.cats.size){for(const c of [...st.cats].slice(0,3))got=got.concat(await gsearch("searchText",{textQuery:c.replace(/&/g,"and")+" restaurants",maxResultCount:20,locationBias:{circle}}))}
+    else got=await gsearch("searchNearby",{includedTypes:["restaurant"],maxResultCount:20,rankPreference:"POPULARITY",locationRestriction:{circle}});
+    const fresh=got.filter(g=>g.businessStatus!=="CLOSED_PERMANENTLY"&&!DATA.some(p=>p.id===g.id)).length;ingest(got);store.set("lastLive",{k:ck,t:Date.now()});
+    setLive(`<b>Live:</b> ${got.length} places refreshed from Google${fresh?`, ${fresh} new`:""}. ${usage().n} lookups used this month.`);render();
+  }catch(e){setLive(liveErr(e))}}
+async function liveSearch(q){const o=origin();st.q=q;st.qIds=new Set();st.shown=50;render();if(!q)return;
+  if(!gkey()){setLive(`Searching the built-in list for “${esc(q)}”. Add a Google key to search live.`);return}
+  setLive(`Searching Google for “${esc(q)}”…`);
+  try{const got=await gsearch("searchText",{textQuery:q,maxResultCount:20,locationBias:{circle:{center:{latitude:o.lat??36.11,longitude:o.lng??-115.18},radius:40000}}});
+    st.qIds=new Set(ingest(got));setLive(`<b>Live:</b> ${got.length} Google results for “${esc(q)}”.`);render();showTab("list")}catch(e){setLive(liveErr(e))}}
+
+/* ---------- Location ---------- */
+let gpsWatch=null;
+function startGPS(){if(!navigator.geolocation||gpsWatch!=null)return;
+  gpsWatch=navigator.geolocation.watchPosition(pos=>{const me=ORIGINS[0],first=me.lat==null;const moved=first||hav(me.lat,me.lng,pos.coords.latitude,pos.coords.longitude)>0.15;
+    me.lat=pos.coords.latitude;me.lng=pos.coords.longitude;me.acc=pos.coords.accuracy;if(st.origin==="me"&&moved){render();if(first)liveRefresh(false)}},
+  err=>{gpsFailed=true;gpsWatch=null;if(st.origin==="me"){render();setLive("Location is off, so distances are from Southwest Las Vegas. Turn on location or pick a starting point.");liveRefresh(false)}},{enableHighAccuracy:true,maximumAge:60000,timeout:20000})}
+
+/* ---------- Settings ---------- */
+function openSettings(){$("#gkey").value=gkey();$("#autolive").checked=store.get("autolive",true);const u=usage();$("#usage").textContent=`Live lookups this month: ${u.n} of ${CAP}.`;
+  $("#ver").textContent=isApp?`App build ${Native.versionCode()} (${Native.versionName()}) · content ${String(Native.webSha()).slice(0,7)}${Native.repo()?` · updates from github.com/${Native.repo()}`:""}`:"Running in a browser.";
+  $("#keymsg").textContent="";$("#settings").showModal()}
+function setupSettings(){$("#gear").onclick=openSettings;
+  $("#showkey").onchange=e=>{$("#gkey").type=e.target.checked?"text":"password"};
+  $("#savekey").onclick=()=>{store.set("gkey",$("#gkey").value.trim());$("#keymsg").textContent=gkey()?"Saved.":"Key cleared.";store.set("lastLive",{});};
+  $("#delkey").onclick=()=>{store.set("gkey","");$("#gkey").value="";$("#keymsg").textContent="Key removed.";setLive(liveErr(new Error("nokey")))};
+  $("#testkey").onclick=async()=>{store.set("gkey",$("#gkey").value.trim());$("#keymsg").textContent="Testing…";
+    try{const r=await gsearch("searchText",{textQuery:"In-N-Out Las Vegas",maxResultCount:1});$("#keymsg").textContent=r.length?`Works. Found “${r[0].displayName?.text}”.`:"Key works, but no result came back."}catch(e){$("#keymsg").innerHTML=liveErr(e)}
+    $("#usage").textContent=`Live lookups this month: ${usage().n} of ${CAP}.`};
+  $("#autolive").onchange=e=>store.set("autolive",e.target.checked);
+  $("#clearlive").onclick=()=>{LIVE={};store.set("live",{});store.set("lastLive",{});location.reload()};
+  $("#checkupd").onclick=()=>{if(isApp)Native.checkWebUpdate();checkRelease(true)};
+  document.addEventListener("click",e=>{if(e.target.id==="addkey"){e.preventDefault();openSettings()}});}
+
+function showTab(w){[["list","#t-list","#v-list"],["map","#t-map","#v-map"],["wheel","#t-wheel","#v-wheel"]].forEach(([k,t,v])=>{$(t).setAttribute("aria-selected",k===w);$(v).hidden=k!==w});
+  if(w==="wheel")buildWheel();if(w==="map"){initMap();render();setTimeout(()=>map&&map.invalidateSize(),50)}}
+
+function setup(){
+  const rr=()=>{st.shown=50;render()};
+  $("#origin").innerHTML=ORIGINS.map(o=>`<option value="${o.k}">${o.n}</option>`).join("");$("#origin").value=st.origin;
+  $("#dial").value=st.dial;
+  $("#cuis").innerHTML=CATS.map(([n])=>`<button class="chip" aria-pressed="false" data-c="${n}">${n}</button>`).join("");
+  $("#svc").innerHTML=SVC.map(([k,n])=>`<button class="chip" aria-pressed="false" data-s="${k}">${n}</button>`).join("");
+  const toSmart=()=>{if(st.sort!=="smart"){st.sort="smart";$("#sort").value="smart"}};
+  $("#dial").addEventListener("input",e=>{st.dial=+e.target.value;store.set("dial",st.dial);toSmart();rr()});
+  document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{st.dial=+b.dataset.p;$("#dial").value=st.dial;store.set("dial",st.dial);toSmart();rr()});
+  $("#origin").onchange=e=>{st.origin=e.target.value;store.set("origin",st.origin);if(st.origin==="me")startGPS();rr();liveRefresh(false)};
+  $("#sort").onchange=e=>{st.sort=e.target.value;rr()};
+  $("#maxd").oninput=e=>{st.maxd=+e.target.value||50;rr()};
+  $("#minr").oninput=e=>{st.minr=+e.target.value||0;rr()};
+  $("#opennow").onchange=e=>{st.open=e.target.checked;rr()};
+  const multi=(sel,attr,set)=>$(sel).onclick=e=>{const b=e.target.closest(`[${attr}]`);if(!b)return;const c=b.getAttribute(attr);set.has(c)?set.delete(c):set.add(c);b.setAttribute("aria-pressed",set.has(c));rr()};
+  multi("#cuis","data-c",st.cats);multi("#svc","data-s",st.svc);
+  $("#budget").onchange=e=>{st.budget=+e.target.value;rr()};
+  $("#more").onclick=()=>{st.shown+=50;render()};
+  $("#chart").onclick=e=>{const c=e.target.closest("circle");if(c)goTo(+c.dataset.i)};
+  $("#refresh").onclick=async()=>{const b=$("#refresh");b.classList.add("spinning");st.checked=new Date();render();
+    if(isApp)Native.checkWebUpdate();await liveRefresh(true);b.classList.remove("spinning")};
+  $("#sform").onsubmit=e=>{e.preventDefault();liveSearch($("#q").value.trim())};
+  $("#q").addEventListener("search",()=>{if(!$("#q").value)liveSearch("")});
+  setupSettings();
+  $("#t-list").onclick=()=>showTab("list");$("#t-map").onclick=()=>showTab("map");$("#t-wheel").onclick=()=>showTab("wheel");
+  ["#wmax","#wmin","#wsize","#wweight"].forEach(s=>$(s).onchange=()=>{if(!spinning)buildWheel()});
+  $("#spin").onclick=spin;$("#spin2").onclick=spin;
+  matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>drawWheel());
+  setInterval(()=>{st.checked=new Date();render()},5*60000);
+  reindex();render();
+  if(st.origin==="me")startGPS();
+  liveRefresh(false);setTimeout(()=>checkRelease(false),3000);
+  if(location.hash==="#wheel")showTab("wheel");if(location.hash==="#map")showTab("map");
+}
+async function boot(){try{const r=await fetch("data.json",{cache:"no-store"});DATA=await r.json()}catch(e){DATA=[]}
+  Object.values(LIVE).forEach(applyLive);setup()}
+boot();
+</script>
+</body></html>
