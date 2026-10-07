@@ -1,5 +1,5 @@
 // Worth the Drive service worker: keeps the app working offline and picks up new versions from GitHub Pages.
-const CACHE = "wtd-v1";
+const CACHE = "wtd-v2";
 const SHELL = ["./", "./index.html", "./data.json", "./leaflet.js", "./leaflet.css", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
@@ -22,7 +22,10 @@ self.addEventListener("fetch", e => {
   e.respondWith((async () => {
     const cache = await caches.open(CACHE);
     try {
-      const res = await fetch(e.request, { cache: "no-cache" });
+      // Skip GitHub's 10-minute CDN cache for the page and data so pushes show up right away.
+      const fresh = /\/$|\.html$|\.json$|\.webmanifest$/.test(url.pathname)
+        ? new URL(url.pathname + "?v=" + Date.now(), url.origin).href : e.request;
+      const res = await fetch(fresh, { cache: "no-store" });
       if (res.ok) cache.put(e.request, res.clone());
       return res;
     } catch (err) {
