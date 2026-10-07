@@ -2,6 +2,15 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Worth the Drive</title>
 <link rel="stylesheet" href="leaflet.css">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Worth the Drive">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#F2F4F1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1513" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
@@ -408,7 +417,8 @@ function frontier(arr){const s=new Set();arr.forEach(p=>{if(!arr.some(q=>q!==p&&
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const price=p=>p==null?"":"$".repeat(p);
 const mapsUrl=p=>p.gurl||`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.n+" "+p.a)}&query_place_id=${p.id}`;
-const dirUrl=p=>`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(p.n+" "+p.a)}&destination_place_id=${p.id}`;
+const IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const dirUrl=p=>IOS?`https://maps.apple.com/?daddr=${p.lat},${p.lng}&q=${encodeURIComponent(p.n)}`:`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(p.n+" "+p.a)}&destination_place_id=${p.id}`;
 const openPill=p=>p.tmp?'<span class="pill closed">Temporarily closed</span>':p.isOpen==null?'<span class="pill unk">Hours n/a</span>':p.isOpen?'<span class="pill open">Open</span>':'<span class="pill closed">Closed</span>';
 const svcPills=p=>(p.live?`<span class="pill live" title="Updated from Google ${ago(p.live)}">${p.isNew?"New · Live":"Live"}</span>`:"")+(p.dt===2?'<span class="pill svc">Drive-thru</span>':p.dt===1?'<span class="pill svc" title="Listed for drive-thru; not confirmed in reviews">Drive-thru?</span>':"")+(p.m==="counter"?'<span class="pill svc">Grab &amp; go</span>':"");
 
@@ -570,7 +580,7 @@ function openUrl(u){if(isApp)Native.openExternal(u);else window.open(u,"_blank",
 function banner(text,label,fn){const b=$("#banner");b.innerHTML=`<span>${esc(text)}</span><span class="btnrow">${label?`<button class="btn primary" id="bnbtn">${esc(label)}</button>`:""}<button class="x" id="bnx" aria-label="Dismiss">×</button></span>`;b.hidden=false;
   if(label)$("#bnbtn").onclick=fn;$("#bnx").onclick=()=>{b.hidden=true}}
 window.onWebUpdated=()=>banner("New app content was downloaded from GitHub.","Reload",()=>location.reload());
-async function checkRelease(manual){if(!isApp)return manual&&banner("Updates are checked inside the Android app.");const repo=Native.repo();if(!repo)return manual&&banner("This build isn't linked to a GitHub repo.");
+async function checkRelease(manual){if(!isApp)return manual&&banner("This version updates itself from GitHub every time you open it.","Reload now",()=>location.reload());const repo=Native.repo();if(!repo)return manual&&banner("This build isn't linked to a GitHub repo.");
   const r=await http("GET",`https://api.github.com/repos/${repo}/releases/latest`,{"Accept":"application/vnd.github+json"});
   if(r.status!==200){if(manual)banner("Couldn't reach GitHub to check for updates.");return}
   const j=pj(r.text),n=+((String(j.tag_name||"").match(/\d+/)||[0])[0]);
@@ -633,7 +643,7 @@ function startGPS(){if(!navigator.geolocation||gpsWatch!=null)return;
 
 /* ---------- Settings ---------- */
 function openSettings(){$("#gkey").value=gkey();$("#autolive").checked=store.get("autolive",true);const u=usage();$("#usage").textContent=`Live lookups this month: ${u.n} of ${CAP}.`;
-  $("#ver").textContent=isApp?`App build ${Native.versionCode()} (${Native.versionName()}) · content ${String(Native.webSha()).slice(0,7)}${Native.repo()?` · updates from github.com/${Native.repo()}`:""}`:"Running in a browser.";
+  $("#ver").textContent=isApp?`App build ${Native.versionCode()} (${Native.versionName()}) · content ${String(Native.webSha()).slice(0,7)}${Native.repo()?` · updates from github.com/${Native.repo()}`:""}`:(matchMedia("(display-mode: standalone)").matches||navigator.standalone?"Home Screen web app":"Browser")+" · updates itself from GitHub each time it opens.";
   $("#keymsg").textContent="";$("#settings").showModal()}
 function setupSettings(){$("#gear").onclick=openSettings;
   $("#showkey").onchange=e=>{$("#gkey").type=e.target.checked?"text":"password"};
@@ -696,5 +706,8 @@ function setup(){
 async function boot(){try{const r=await fetch("data.json",{cache:"no-store"});DATA=await r.json()}catch(e){DATA=[]}
   Object.values(LIVE).forEach(applyLive);setup()}
 boot();
+if(!isApp&&"serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+setTimeout(()=>{const standalone=matchMedia("(display-mode: standalone)").matches||navigator.standalone;
+  if(IOS&&!isApp&&!standalone&&!store.get("iosHint",false)){banner("Install it: tap Share, then “Add to Home Screen”. It opens full-screen like an app.","Got it",()=>{store.set("iosHint",true);$("#banner").hidden=true})}},2500);
 </script>
 </body></html>

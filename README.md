@@ -1,6 +1,6 @@
 # Worth the Drive
 
-An Android app that ranks Las Vegas–area restaurants by how good they are *for how far away they are*. It includes a rating-vs-distance dial, budget per person, drive-thru and grab-and-go filters, a live map, and a Surprise Me wheel.
+An Android and iPhone app that ranks Las Vegas–area restaurants by how good they are *for how far away they are*. It includes a rating-vs-distance dial, budget per person, drive-thru and grab-and-go filters, a live map, and a Surprise Me wheel.
 
 ## How it's put together
 
@@ -25,6 +25,10 @@ Keep those two files somewhere safe. If they're lost, the next APK won't install
 Then open **Actions → Build APK → Run workflow** to build with the real key.
 
 ### 2. Install on your phone
+
+**iPhone / iPad:** in **Safari**, open <https://nulchaos.github.io/worth-the-drive/>. Tap **Share**, then **Add to Home Screen**. It opens full-screen like an app and updates itself every time it opens. Every push to `web/` republishes it automatically.
+
+**Android:**
 
 Open **Releases** on your phone, download `WorthTheDrive.apk`, and open it. Android will ask you to allow installs from your browser. Allow it once.
 
