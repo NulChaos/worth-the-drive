@@ -80,6 +80,8 @@ public class MainActivity extends Activity {
         s.setAllowFileAccess(false);
         s.setAllowContentAccess(false);
         s.setMediaPlaybackRequiresUserGesture(false);
+        // Identify the app to map-tile servers (OpenStreetMap asks apps to do this).
+        s.setUserAgentString(s.getUserAgentString() + " WorthTheDrive/" + BuildConfig.VERSION_NAME);
 
         loader = new WebViewAssetLoader.Builder()
                 .setDomain(HOST)

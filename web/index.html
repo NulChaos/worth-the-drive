@@ -145,6 +145,49 @@ dialog input[type=password],dialog input[type=text]{width:100%;font:inherit;colo
 .btnrow{display:flex;gap:8px;flex-wrap:wrap}
 .youdot{width:16px;height:16px;border-radius:50%;background:#2F7BF6;border:3px solid #fff;box-shadow:0 0 0 6px rgba(47,123,246,.25)}
 .mapbtn{position:absolute;right:10px;bottom:24px;z-index:500}
+/* App shell on phones: compact header, filters in a bottom sheet, bottom tab bar */
+#bnav,.sheethead,#scrim{display:none}
+.darktiles{filter:invert(1) hue-rotate(180deg) brightness(.92) contrast(.88) saturate(.55)}
+.pin{width:28px;height:28px;border-radius:50%;background:var(--neon);color:#fff;font:800 13px/1 var(--display);display:grid;place-items:center;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.badge{display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 5px;border-radius:999px;background:var(--neon);color:#fff;font:700 11px/1 var(--body);margin-left:4px}
+.badge:empty{display:none}
+@media(max-width:959px){
+  body{padding-block:10px calc(86px + env(safe-area-inset-bottom,0px))}
+  .wrap{gap:12px}
+  header{align-items:center;gap:8px}
+  h1{font-size:26px}
+  .sub,.fresh,.btxt,label[for="origin"]{display:none}
+  .hctl{gap:6px;flex-wrap:nowrap;align-items:center;min-width:0;flex:1 1 100%}
+  .hctl>div{min-width:0}
+  .hctl>div:first-child{flex:1}
+  #origin{width:100%;padding:8px 10px;font-size:14px}
+  .btn{padding:8px 11px}
+  .searchbar input{padding:10px 12px}
+  .tabs{display:none}
+  .grid{display:block}
+  .side{position:fixed;left:0;right:0;bottom:0;z-index:1001;max-height:86dvh;overflow:auto;overscroll-behavior:contain;background:var(--bg);
+    border-radius:20px 20px 0 0;box-shadow:0 -12px 40px rgba(0,0,0,.35);padding:8px 14px calc(20px + env(safe-area-inset-bottom,0px));
+    transform:translateY(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);visibility:hidden}
+  body.sheet .side{transform:none;visibility:visible}
+  body.sheet{overflow:hidden}
+  #scrim{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.45)}
+  body.sheet #scrim{display:block}
+  .sheethead{display:flex;position:sticky;top:-8px;z-index:2;background:var(--bg);padding-block:8px;align-items:center;justify-content:space-between;gap:10px}
+  .sheethead::before{content:"";position:absolute;left:50%;top:2px;width:40px;height:4px;border-radius:2px;background:var(--line);transform:translateX(-50%)}
+  .sheethead h2{font-family:var(--display);font-size:20px;margin:6px 0 0}
+  #bnav{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:999;background:var(--panel);border-top:1px solid var(--line);
+    padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+  #bnav button{font:600 12px/1.1 var(--body);color:var(--muted);background:none;border:0;display:grid;justify-items:center;gap:3px;padding:6px 2px;border-radius:12px;cursor:pointer}
+  #bnav button svg{width:22px;height:22px}
+  #bnav button[aria-current="true"]{color:var(--ink);background:var(--accent-soft)}
+  #bnav button[aria-current="true"] svg{color:var(--accent)}
+  .mapwrap{height:calc(100dvh - 320px);min-height:340px}
+  .card{grid-template-columns:34px minmax(0,1fr);padding:12px 14px}
+  .rank{font-size:22px}
+  .name{font-size:17px}
+  footer{font-size:11.5px}
+}
+@media(prefers-reduced-motion:reduce){.side{transition:none}}
 #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
 footer{color:var(--muted);font-size:12.5px;max-width:80ch}
 @media(prefers-reduced-motion:reduce){.pop,.spinning .ic{animation:none}}
@@ -187,17 +230,19 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
     <div><label class="lbl" for="origin">Starting from</label><select id="origin"></select></div>
     <div><button class="btn" id="gear" aria-label="Settings" title="Settings"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
     <div><span class="fresh" id="fresh" aria-live="polite"></span>
-      <button class="btn" id="refresh" title="Pull live ratings, hours and new places, and re-rank"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>Refresh</button></div>
+      <button class="btn" id="refresh" title="Pull live ratings, hours and new places, and re-rank"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg><span class="btxt">Refresh</span></button></div>
   </div>
 </header>
 <div id="banner" role="status" hidden></div>
 <div class="row" style="align-items:center">
-  <form class="searchbar" id="sform" role="search"><input id="q" type="search" placeholder="Search restaurants or cuisines (live with a Google key)" aria-label="Search restaurants" autocomplete="off"><button class="btn" type="submit">Search</button></form>
+  <form class="searchbar" id="sform" role="search"><input id="q" type="search" placeholder="Search restaurants or cuisines" aria-label="Search restaurants" autocomplete="off"><button class="btn" type="submit">Search</button></form>
   <p class="livestat" id="livestat" aria-live="polite"></p>
 </div>
 
 <div class="grid">
-<div class="side">
+<div id="scrim"></div>
+<div class="side" id="side" aria-label="Filters and trade-off dial">
+  <div class="sheethead"><h2>Filters &amp; dial</h2><button class="btn primary" id="sheetdone" type="button">Show results</button></div>
   <section class="panel" aria-labelledby="dialh">
     <div class="dialhead"><h2 id="dialh">The trade-off dial</h2><span class="lbl">rating ⇄ distance</span></div>
     <p class="rule" id="rule"></p>
@@ -279,11 +324,17 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
   </section>
 </main>
 </div>
+<nav id="bnav" aria-label="Views">
+  <button data-v="list" aria-current="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>List</button>
+  <button data-v="map" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg>Map</button>
+  <button data-v="filters" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg><span>Filters<span class="badge" id="fcount"></span></span></button>
+  <button data-v="wheel" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/></svg>Surprise</button>
+</nav>
 
 <footer>
   The built-in list covers about 400 places across Las Vegas, Henderson, Summerlin and North Las Vegas, captured from Google Maps on Oct 5, 2026, with Claude's summaries of recent reviews (the one-line takes, “order” and “heads-up” notes). With a Google API key in Settings, Refresh and Search pull live ratings, hours, prices and newly opened places; those get a <b>Live</b> tag. Places Google reports as permanently closed are hidden.
   <b>Trust-adjusted rating</b> pulls places with few reviews toward the local average (4.4★). <b>Drive-thru</b> means reviews mention one; <b>Drive-thru?</b> means it's a chain that usually has one. <b>Grab &amp; go</b> marks counter-service spots.
-  <b>Budget</b> uses Google's per-person price range when it has one, otherwise its $–$$$$ level ($ ≈ $10–20, $$ ≈ $20–30, $$$ ≈ $30–50, $$$$ ≈ $50+); “est.” means Claude estimated it. Distances are straight-line × 1.25 as a rough driving estimate. Map © OpenStreetMap contributors © CARTO.
+  <b>Budget</b> uses Google's per-person price range when it has one, otherwise its $–$$$$ level ($ ≈ $10–20, $$ ≈ $20–30, $$$ ≈ $30–50, $$$$ ≈ $50+); “est.” means Claude estimated it. Distances are straight-line × 1.25 as a rough driving estimate. Map data and tiles © OpenStreetMap contributors.
 </footer>
 </div>
 
@@ -321,7 +372,7 @@ const PRIOR=4.4, M=100, ROAD=1.25;
 const $=s=>document.querySelector(s);
 const store={get(k,d){try{const v=localStorage.getItem("wtd_"+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem("wtd_"+k,JSON.stringify(v))}catch(e){}}};
 
-let st={dial:store.get("dial",45),origin:store.get("origin","me"),q:"",qIds:new Set(),sort:"smart",maxd:25,minr:0,cats:new Set(),svc:new Set(),budget:999,open:false,shown:50,checked:new Date()};
+let st={dial:store.get("dial",45),origin:store.get("origin","me"),q:"",qIds:new Set(),sort:"smart",maxd:30,minr:0,cats:new Set(),svc:new Set(),budget:999,open:false,shown:50,checked:new Date()};
 
 function reindex(){DATA.forEach((p,i)=>{p.i=i;p.cats=CATS.filter(([,re])=>re.test(p.c)).map(([n])=>n);
   p.adj=(p.v/(p.v+M))*p.r+(M/(p.v+M))*PRIOR;});}
@@ -383,7 +434,7 @@ function render(){compute();const k=mpt(st.dial);
       <dl class="dl"><dt>Order</dt><dd>${esc(p.o)}</dd>${p.w&&p.w!=="None that repeat"?`<dt>Heads-up</dt><dd>${esc(p.w)}</dd>`:""}</dl>
       ${why}<div class="links"><a href="${dirUrl(p)}" target="_blank" rel="noopener">Directions</a><a href="${mapsUrl(p)}" target="_blank" rel="noopener">All reviews on Google</a></div></div></li>`}).join("")
     :`<li class="empty">Nothing matches. Raise the max miles or clear a filter.</li>`;
-  freshness();
+  freshness();$("#fcount").textContent=filterCount()||"";$("#sheetdone").textContent=`Show ${list.length} places`;
   if(!spinning)buildWheel();
   updateMap(vis,new Set(sorted(vis,"smart").slice(0,3).map(p=>p.i)));
 }
@@ -473,9 +524,14 @@ function initMap(){if(map)return;if(!window.L){$("#map").innerHTML='<div class="
   baseLayers=L.layerGroup().addTo(map);mapLayers=L.layerGroup().addTo(map);originLayer=L.layerGroup().addTo(map);
   drawBase();matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>{drawBase();render()});
   $("#locate").onclick=()=>{const me=ORIGINS[0];if(me.lat==null){startGPS();setLive("Finding your location…");return}map.setView([me.lat,me.lng],14)};}
-function drawBase(){if(!map)return;if(tiles)map.removeLayer(tiles);
-  tiles=L.tileLayer(`https://{s}.basemaps.cartocdn.com/${darkMode()?"dark_all":"rastertiles/voyager"}/{z}/{x}/{y}{r}.png`,{subdomains:"abcd",maxZoom:20,detectRetina:true,
-    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>'}).addTo(map);tiles.bringToBack();}
+const TILESRC=[
+  {u:"https://tile.openstreetmap.org/{z}/{x}/{y}.png",a:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',mz:19},
+  {u:"https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",a:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · tiles OSM France',mz:19,sub:"abc"}];
+let tileIdx=0,tileErrs=0;
+function drawBase(){if(!map)return;if(tiles)map.removeLayer(tiles);const t=TILESRC[tileIdx];
+  tiles=L.tileLayer(t.u,{subdomains:t.sub||"abc",maxZoom:t.mz,attribution:t.a,className:darkMode()?"darktiles":"",crossOrigin:false}).addTo(map);tiles.bringToBack();
+  tiles.on("tileload",()=>{tileErrs=0});
+  tiles.on("tileerror",()=>{if(++tileErrs>6){tileErrs=0;if(tileIdx<TILESRC.length-1){tileIdx++;drawBase()}else setLive("The map's street tiles aren't loading. Check your connection.")}});}
 function popupHtml(p,rank){return `<div class="pp"><span class="lbl">#${rank} · ${esc(p.c)}</span><h4>${esc(p.n)}</h4>
   <div class="stats"><span><span class="star">★</span> ${p.r.toFixed(1)} <span class="meta">(${p.v.toLocaleString()})</span></span><span class="true">${p.adj.toFixed(2)} adj</span><span>~${p.d.toFixed(1)} mi</span></div>
   <div class="chips" style="margin:2px 0 6px">${svcPills(p)}${openPill(p)}</div>
@@ -486,9 +542,10 @@ function updateMap(vis,top3){if(!map)return;mapLayers.clearLayers();originLayer.
   const ranked=sorted(vis,"smart"),rank=new Map(ranked.map((p,n)=>[p.i,n+1]));
   const acc=css("--accent"),neon=css("--neon"),panel=css("--panel"),ink=css("--ink");
   const hi=ranked[0]?.score??0,lo=ranked[ranked.length-1]?.score??0;
-  ranked.slice().reverse().forEach(p=>{const hot=top3.has(p.i);const t=hi>lo?(p.score-lo)/(hi-lo):1;
-    L.circleMarker([p.lat,p.lng],{radius:hot?10:4+t*5,color:panel,weight:1.5,fillColor:hot?neon:acc,fillOpacity:hot?1:.45+t*.45})
-      .bindPopup(()=>popupHtml(p,rank.get(p.i)),{maxWidth:280}).bindTooltip(esc(p.n),{direction:"top",offset:[0,-6]}).addTo(mapLayers)});
+  ranked.slice().reverse().forEach(p=>{const n=rank.get(p.i);const t=hi>lo?(p.score-lo)/(hi-lo):1;
+    const m=top3.has(p.i)?L.marker([p.lat,p.lng],{icon:L.divIcon({className:"",html:`<div class="pin">${n}</div>`,iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-12]}),zIndexOffset:1000-n})
+      :L.circleMarker([p.lat,p.lng],{radius:5+t*5,color:"#ffffff",opacity:.9,weight:1.5,fillColor:acc,fillOpacity:.55+t*.4});
+    m.bindPopup(()=>popupHtml(p,n),{maxWidth:270,autoPanPadding:[20,60]}).addTo(mapLayers)});
   const o=origin(),me=ORIGINS[0];
   if(o.k!=="me")L.circleMarker([o.lat,o.lng],{radius:8,color:panel,weight:3,fillColor:ink,fillOpacity:1}).bindTooltip("Start: "+o.n).addTo(originLayer);
   if(me.lat!=null){if(me.acc&&me.acc<2000)L.circle([me.lat,me.lng],{radius:me.acc,color:"#2F7BF6",weight:1,fillOpacity:.08,interactive:false}).addTo(originLayer);
@@ -591,7 +648,13 @@ function setupSettings(){$("#gear").onclick=openSettings;
   document.addEventListener("click",e=>{if(e.target.id==="addkey"){e.preventDefault();openSettings()}});}
 
 function showTab(w){[["list","#t-list","#v-list"],["map","#t-map","#v-map"],["wheel","#t-wheel","#v-wheel"]].forEach(([k,t,v])=>{$(t).setAttribute("aria-selected",k===w);$(v).hidden=k!==w});
-  if(w==="wheel")buildWheel();if(w==="map"){initMap();render();setTimeout(()=>map&&map.invalidateSize(),50)}}
+  document.querySelectorAll("#bnav [data-v]").forEach(b=>b.setAttribute("aria-current",b.dataset.v===w));closeSheet();
+  if(w==="wheel")buildWheel();if(w==="map"){initMap();render();setTimeout(()=>map&&map.invalidateSize(),60)}
+  if(matchMedia("(max-width:959px)").matches)window.scrollTo({top:0,behavior:"auto"})}
+function openSheet(){document.body.classList.add("sheet");document.querySelectorAll("#bnav [data-v]").forEach(b=>b.setAttribute("aria-current",b.dataset.v==="filters"))}
+function closeSheet(){if(!document.body.classList.contains("sheet"))return;document.body.classList.remove("sheet");
+  const cur=["list","map","wheel"].find(k=>!$("#v-"+k).hidden)||"list";document.querySelectorAll("#bnav [data-v]").forEach(b=>b.setAttribute("aria-current",b.dataset.v===cur))}
+function filterCount(){return st.cats.size+st.svc.size+(st.budget<999)+(st.open?1:0)+(st.minr>0)+(st.maxd!==30)}
 
 function setup(){
   const rr=()=>{st.shown=50;render()};
@@ -617,6 +680,9 @@ function setup(){
   $("#sform").onsubmit=e=>{e.preventDefault();liveSearch($("#q").value.trim())};
   $("#q").addEventListener("search",()=>{if(!$("#q").value)liveSearch("")});
   setupSettings();
+  $("#bnav").onclick=e=>{const b=e.target.closest("[data-v]");if(!b)return;b.dataset.v==="filters"?(document.body.classList.contains("sheet")?closeSheet():openSheet()):showTab(b.dataset.v)};
+  $("#scrim").onclick=closeSheet;$("#sheetdone").onclick=closeSheet;
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
   $("#t-list").onclick=()=>showTab("list");$("#t-map").onclick=()=>showTab("map");$("#t-wheel").onclick=()=>showTab("wheel");
   ["#wmax","#wmin","#wsize","#wweight"].forEach(s=>$(s).onchange=()=>{if(!spinning)buildWheel()});
   $("#spin").onclick=spin;$("#spin2").onclick=spin;
