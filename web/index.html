@@ -227,6 +227,79 @@ dialog.detail::backdrop{background:rgba(0,0,0,.5)}
   dialog.detail[open]{animation:sheetup .25s cubic-bezier(.2,.8,.2,1)}}
 @keyframes sheetup{from{transform:translateY(40%);opacity:.4}to{transform:none;opacity:1}}
 @media(prefers-reduced-motion:reduce){dialog.detail[open]{animation:none}}
+/* Home: greeting, moods, dial bar, hero pick */
+.apphead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.brand{font-family:var(--display);font-weight:800;font-size:18px;letter-spacing:-.01em}
+.brand span{color:var(--neon)}
+.hicons{display:flex;gap:6px;align-items:center}
+.greet{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.greet h1{font-size:clamp(26px,6vw,40px)}
+.from{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:15px}
+.from select{border:0;background:var(--accent-soft);color:var(--accent);font-weight:600;border-radius:999px;padding:5px 10px;max-width:70vw}
+.searchrow[hidden]{display:none!important}
+.homectl{display:grid;gap:12px}
+.moods{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;margin-inline:-16px;padding-inline:16px}
+.moods::-webkit-scrollbar{display:none}
+.mood{flex:none;font:600 14px var(--body);border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer;white-space:nowrap}
+.mood[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.mood.filt{color:var(--muted)}
+.dialbar{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:grid;gap:8px}
+.dialtext{font-size:16px}
+.dialtext b{font-family:var(--mono);color:var(--accent);font-size:19px;white-space:nowrap}
+.dialbar input[type=range]{height:28px}
+.hero{background:linear-gradient(160deg,var(--accent-soft),var(--panel) 65%);border:1px solid var(--accent);border-radius:20px;padding:18px;display:grid;gap:10px;cursor:pointer}
+.herotop{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.herotop .lbl{color:var(--accent)}
+.hero h2{font-family:var(--display);font-size:clamp(24px,6vw,30px);line-height:1.05;margin:0;text-wrap:balance}
+.match{font:700 13px var(--mono);color:var(--accent);background:var(--panel);border:1px solid var(--accent);border-radius:999px;padding:3px 9px;white-space:nowrap}
+.match.sm{font-size:12px;padding:2px 7px;border-color:var(--line);color:var(--ink)}
+.whys{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:14.5px}
+.whys li::before{content:"✓ ";color:var(--accent);font-weight:700}
+.whys li.worth{font-weight:600}
+.whys li.worth::before{content:"➜ ";color:var(--neon)}
+.heroacts{display:flex;gap:8px;flex-wrap:wrap}
+.heroacts .btn{text-decoration:none}
+.fb{display:flex;gap:8px;flex-wrap:wrap}
+.fbb{font:600 13px var(--body);border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:7px 12px;cursor:pointer}
+.fbb[aria-pressed="true"][data-fb="love"]{background:var(--neon);border-color:var(--neon);color:#fff}
+.fbb[aria-pressed="true"][data-fb="nope"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.fbb[aria-pressed="true"][data-fb="been"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.whyline{font-size:13.5px;color:var(--ink);opacity:.85}
+.card .top{align-items:center}
+/* Profile view */
+.pcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:10px}
+.pcard h2{font-family:var(--display);font-size:20px;margin:0}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14.5px;margin:0}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0}
+.plist{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.plist li{display:flex;justify-content:space-between;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding-bottom:6px}
+.plist button.linkbtn{text-align:left}
+.tagc{display:inline-block;font-size:12.5px;border-radius:999px;padding:3px 9px;margin:2px 4px 2px 0;background:var(--accent-soft);color:var(--accent)}
+.tagc.no{background:var(--neon-soft);color:var(--neon)}
+/* Onboarding */
+.onb{position:fixed;inset:0;z-index:2000;background:var(--bg);overflow:auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.onbin{max-width:560px;margin:0 auto;min-height:100%;display:grid;grid-template-rows:auto 1fr auto;gap:18px}
+.onbtop{display:flex;justify-content:space-between;align-items:center}
+.obdots{display:flex;gap:6px}
+.obdots i{width:22px;height:5px;border-radius:3px;background:var(--line)}
+.obdots i.on{background:var(--accent)}
+.obstep{display:grid;gap:16px;align-content:start}
+.obstep h2{font-family:var(--display);font-size:clamp(28px,7vw,38px);line-height:1.05;margin:8px 0 0;text-wrap:balance}
+.obstep p{margin:0;color:var(--muted);font-size:16px}
+.obgrid{display:flex;flex-wrap:wrap;gap:8px}
+.obchip{font:600 15px var(--body);border:1.5px solid var(--line);background:var(--panel);color:var(--ink);border-radius:14px;padding:11px 14px;cursor:pointer}
+.obchip[aria-pressed="true"],.obchip.love{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+.obchip.love::before{content:"♥ ";color:var(--neon)}
+.obchip.never{border-color:var(--line);background:var(--bg);color:var(--muted);text-decoration:line-through}
+.obrange{display:grid;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+.obrange b{font-family:var(--mono);color:var(--accent);font-size:20px}
+.onbnav{display:flex;justify-content:space-between;gap:10px}
+.onbnav .btn{padding:12px 20px;font-size:16px}
+#toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:1500;background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 14px;font-size:14px;display:flex;gap:12px;align-items:center;max-width:calc(100vw - 32px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+#toast button{background:none;border:0;color:var(--neon);font:700 14px var(--body);cursor:pointer}
+@media(min-width:960px){#toast{bottom:24px}}
+@media(max-width:959px){.greet h1{font-size:30px}}
 #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
 footer{color:var(--muted);font-size:12.5px;max-width:80ch}
 @media(prefers-reduced-motion:reduce){.pop,.spinning .ic{animation:none}}
@@ -234,6 +307,14 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
 
 </head><body>
 <canvas id="confetti" aria-hidden="true"></canvas>
+<div id="onb" class="onb" hidden role="dialog" aria-modal="true" aria-labelledby="onbh">
+  <div class="onbin">
+    <div class="onbtop"><div class="obdots" id="obdots"></div><button class="linkbtn" id="obskip" type="button">Skip for now</button></div>
+    <div id="obstep" class="obstep"></div>
+    <div class="onbnav"><button class="btn" id="obback" type="button">Back</button><button class="btn primary" id="obnext" type="button">Next</button></div>
+  </div>
+</div>
+<div id="toast" role="status" aria-live="polite" hidden></div>
 <dialog id="detail" class="detail" aria-labelledby="dname"><div id="dbody"></div></dialog>
 <dialog id="settings" aria-labelledby="seth">
   <form method="dialog" id="setform" style="display:grid;gap:4px">
@@ -261,38 +342,36 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
   </form>
 </dialog>
 <div class="wrap">
-<header>
-  <div>
-    <h1>Worth the <span>Drive</span></h1>
-    <p class="sub">Restaurants ranked by how good they are <em>for how far away they are</em>.</p>
-  </div>
-  <div class="hctl">
-    <div><label class="lbl" for="origin">Starting from</label><select id="origin"></select></div>
-    <div><button class="btn" id="gear" aria-label="Settings" title="Settings"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
-    <div><span class="fresh" id="fresh" aria-live="polite"></span>
-      <button class="btn" id="refresh" title="Pull live ratings, hours and new places, and re-rank"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg><span class="btxt">Refresh</span></button></div>
+<header class="apphead">
+  <div class="brand">Worth the <span>Drive</span></div>
+  <div class="hicons"><span class="fresh" id="fresh" aria-live="polite"></span>
+    <button class="btn" id="searchbtn" aria-label="Search" aria-expanded="false"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+    <button class="btn" id="refresh" title="Pull live ratings, hours and new places, and re-rank"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg><span class="btxt">Refresh</span></button>
+    <button class="btn" id="gear" aria-label="Settings" title="Settings"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v0a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </div>
 </header>
+<div class="greet"><h1 id="greet">Hungry?</h1><label class="from">from <select id="origin" aria-label="Starting point"></select></label></div>
 <div id="banner" role="status" hidden></div>
-<div class="row" style="align-items:center">
+<div class="row searchrow" id="searchrow" style="align-items:center" hidden>
   <form class="searchbar" id="sform" role="search"><input id="q" type="search" placeholder="Search restaurants or cuisines" aria-label="Search restaurants" autocomplete="off"><button class="btn" type="submit">Search</button></form>
-  <p class="livestat" id="livestat" aria-live="polite"></p>
 </div>
+<p class="livestat" id="livestat" aria-live="polite"></p>
 
+<div id="homectl" class="homectl">
+  <div class="moods" id="moods" role="group" aria-label="What are you in the mood for"></div>
+  <section class="dialbar" aria-labelledby="dialq">
+    <div class="dialtext" id="dialq">Half a star better is worth <b id="dialmi">3 mi</b> more driving to me</div>
+    <input type="range" id="dial" min="0" max="100" step="1" aria-labelledby="dialq">
+    <div class="ends"><span>Closest wins</span><span>Food is everything</span></div>
+  </section>
+</div>
 <div class="grid">
 <div id="scrim"></div>
 <div class="side" id="side" aria-label="Filters and trade-off dial">
-  <div class="sheethead"><h2>Filters &amp; dial</h2><button class="btn primary" id="sheetdone" type="button">Show results</button></div>
+  <div class="sheethead"><h2>Fine-tune</h2><button class="btn primary" id="sheetdone" type="button">Show results</button></div>
   <section class="panel" aria-labelledby="dialh">
-    <div class="dialhead"><h2 id="dialh">The trade-off dial</h2><span class="lbl">rating ⇄ distance</span></div>
+    <div class="dialhead"><h2 id="dialh">How your list is ranked</h2><span class="lbl">rating ⇄ distance</span></div>
     <p class="rule" id="rule"></p>
-    <input type="range" id="dial" min="0" max="100" step="1" aria-describedby="rule">
-    <div class="ends"><span>Closest wins</span><span>Food is everything</span></div>
-    <div class="chips" role="group" aria-label="Presets">
-      <button class="chip" data-p="12">Hungry now</button>
-      <button class="chip" data-p="45">Balanced</button>
-      <button class="chip" data-p="78">Special trip</button>
-    </div>
     <svg id="chart" viewBox="0 0 360 220" role="img" aria-label="Trust-adjusted rating versus drive distance"></svg>
     <p class="chartnote">Each dot is a restaurant. Everything on the dashed line scores the same as your #1, so its slope is the dial: flatter means you'll drive farther for better food. Pink dots are your top 3.</p>
   </section>
@@ -315,6 +394,7 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
     <div style="display:grid;gap:6px"><label class="lbl" for="budget">Budget per person</label>
       <select id="budget"><option value="15">Up to $15</option><option value="25">Up to $25</option><option value="40">Up to $40</option><option value="60">Up to $60</option><option value="999" selected>Any budget</option></select></div>
     <label class="toggle"><input type="checkbox" id="opennow"> Open right now (Las Vegas time)</label>
+    <label class="toggle"><input type="checkbox" id="hidebeen"> Hide places I've been</label>
   </section>
 </div>
 
@@ -323,10 +403,12 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
     <button class="tab" role="tab" id="t-list" aria-controls="v-list" aria-selected="true">Ranked list</button>
     <button class="tab" role="tab" id="t-map" aria-controls="v-map" aria-selected="false">Map</button>
     <button class="tab" role="tab" id="t-wheel" aria-controls="v-wheel" aria-selected="false">🎡 Surprise me</button>
+    <button class="tab" role="tab" id="t-profile" aria-controls="v-profile" aria-selected="false">You</button>
   </div>
 
   <section id="v-list" role="tabpanel" aria-labelledby="t-list" style="display:grid;gap:12px">
-    <div class="listhead"><h2 id="lh">Top picks</h2><span class="count" id="count"></span></div>
+    <div id="hero"></div>
+    <div class="listhead"><h2 id="lh">More picks</h2><span class="count" id="count"></span></div>
     <ol class="list" id="list"></ol>
     <button class="btn more" id="more" hidden>Show more</button>
   </section>
@@ -336,6 +418,8 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
     <div class="mapwrap"><div id="map" aria-label="Map of matching restaurants"></div><button class="btn mapbtn" id="locate" type="button">◎ Me</button></div>
     <div class="maplegend"><span><span class="dot" style="background:var(--neon)"></span>Your top 3</span><span><span class="dot" style="background:var(--accent)"></span>Matches your filters</span><span><span class="dot" style="background:#2F7BF6"></span>You</span><span><span class="dot" style="background:var(--ink)"></span>Starting point</span><span>Bigger dots score higher. Tap one for details.</span></div>
   </section>
+
+  <section id="v-profile" role="tabpanel" aria-labelledby="t-profile" hidden style="display:grid;gap:14px"></section>
 
   <section id="v-wheel" role="tabpanel" aria-labelledby="t-wheel" hidden>
     <div class="panel">
@@ -347,7 +431,7 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
           <button class="hub" id="spin" aria-label="Spin the wheel">SPIN</button>
         </div>
         <div class="wctl">
-          <p class="meta" style="margin:0">The wheel uses every filter on the left, plus these:</p>
+          <p class="meta" style="margin:0">The wheel uses your mood and profile, plus these:</p>
           <div style="display:grid;gap:4px"><label class="lbl" for="wmax">Within</label>
             <select id="wmax"><option value="3">3 miles</option><option value="5">5 miles</option><option value="10" selected>10 miles</option><option value="25">Anywhere</option></select></div>
           <div style="display:grid;gap:4px"><label class="lbl" for="wmin">At least</label>
@@ -367,8 +451,9 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
 <nav id="bnav" aria-label="Views">
   <button data-v="list" aria-current="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>List</button>
   <button data-v="map" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg>Map</button>
-  <button data-v="filters" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg><span>Filters<span class="badge" id="fcount"></span></span></button>
   <button data-v="wheel" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/></svg>Surprise</button>
+  <button data-v="profile" aria-current="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>You</button>
+  
 </nav>
 
 <footer>
@@ -412,7 +497,7 @@ const PRIOR=4.4, M=100, ROAD=1.25;
 const $=s=>document.querySelector(s);
 const store={get(k,d){try{const v=localStorage.getItem("wtd_"+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem("wtd_"+k,JSON.stringify(v))}catch(e){}}};
 
-let st={dial:store.get("dial",45),origin:store.get("origin","me"),q:"",qIds:new Set(),sort:"smart",maxd:30,minr:0,cats:new Set(),svc:new Set(),budget:999,open:false,shown:50,checked:new Date()};
+let st={mood:"now",late:false,dial:45,origin:store.get("origin","me"),q:"",qIds:new Set(),sort:"smart",maxd:30,minr:0,cats:new Set(),svc:new Set(),budget:999,open:false,shown:50,checked:new Date()};
 
 function reindex(){DATA.forEach((p,i)=>{p.i=i;p.cats=CATS.filter(([,re])=>re.test(p.c)).map(([n])=>n);
   p.adj=(p.v/(p.v+M))*p.r+(M/(p.v+M))*PRIOR;});}
@@ -440,7 +525,7 @@ function openInfo(p){if(p.tmp)return{s:"closed",t:"Temporarily closed"};
   (ranges(dayStr(p,(day+6)%7))||[]).forEach(([a,b])=>{if(b>1440)iv.push([a-1440,b-1440])});
   const cur=iv.find(([a,b])=>min>=a&&min<b);
   if(cur&&!(liveFresh&&p.liveOpen===false)){if(cur[1]-cur[0]>=1440)return{s:"open",t:"Open 24 hours"};const left=cur[1]-min;
-    return left<=60?{s:"soon",t:`Closes soon · ${fmtT(cur[1])}`,left}:{s:"open",t:`Open until ${fmtT(cur[1])}`}}
+    return left<=60?{s:"soon",t:`Closes soon · ${fmtT(cur[1])}`,left,end:cur[1]%1440}:{s:"open",t:`Open until ${fmtT(cur[1])}`,end:cur[1]%1440}}
   if(liveFresh&&p.liveOpen)return{s:"open",t:"Open now"};
   for(let k=0;k<8;k++){const d=(day+k)%7;const nx=(ranges(dayStr(p,d))||[]).map(r=>r[0]+k*1440).filter(a=>a>min).sort((a,b)=>a-b)[0];
     if(nx!=null)return{s:"closed",t:k===0?`Closed · opens ${fmtT(nx)}`:k===1?`Closed · opens tomorrow ${fmtT(nx)}`:`Closed · opens ${DAYS[d]} ${fmtT(nx)}`}}
@@ -449,11 +534,13 @@ function openState(p){const i=openInfo(p);p.oi=i;return i.s==null?null:i.s!=="cl
 function todayHours(p){if(!p.h||p.h.length!==7)return"";return dayStr(p,vegasNow().day);}
 
 function compute(){const o=origin();const k=mpt(st.dial);
-  DATA.forEach(p=>{p.d=hav(o.lat,o.lng,p.lat,p.lng)*ROAD;p.score=p.adj*10-p.d/k;p.isOpen=openState(p);});}
+  DATA.forEach(p=>{p.d=hav(o.lat,o.lng,p.lat,p.lng)*ROAD;p.isOpen=openState(p);p.base=p.adj*10-p.d/k;p.score=p.base+personal(p);});}
 
 const svcMatch=p=>!st.svc.size||(st.svc.has("dt")&&p.dt>0)||(st.svc.has("counter")&&p.m==="counter")||(st.svc.has("sit")&&p.m==="sit");
 const qMatch=p=>!st.q||st.qIds.has(p.id)||(p.n+" "+p.c+" "+p.a).toLowerCase().includes(st.q.toLowerCase());
-function filtered(){return DATA.filter(p=>!p.closed&&qMatch(p)&&(st.q&&st.qIds.has(p.id)||p.d<=st.maxd)&&p.v>=st.minr&&svcMatch(p)&&
+const tasteOk=p=>{const f=FB[p.id];if(f&&f.v==="nope")return false;if(f&&f.v==="been"&&PROF.hideBeen&&!st.q)return false;
+  if(PROF.never.length&&p.cats.length&&p.cats.every(c=>PROF.never.includes(c)))return false;return true};
+function filtered(){return DATA.filter(p=>!p.closed&&qMatch(p)&&tasteOk(p)&&(!st.late||isLate(p))&&(st.q&&st.qIds.has(p.id)||p.d<=st.maxd)&&p.v>=st.minr&&svcMatch(p)&&
   (!st.cats.size||p.cats.some(c=>st.cats.has(c)))&&
   lowOf(p)<st.budget&&(!st.open||p.isOpen));}
 function sorted(arr,how=st.sort){const f={smart:(a,b)=>b.score-a.score,true:(a,b)=>b.adj-a.adj,rating:(a,b)=>b.r-a.r||b.v-a.v,dist:(a,b)=>a.d-b.d,reviews:(a,b)=>b.v-a.v}[how];return arr.slice().sort(f);}
@@ -468,30 +555,35 @@ const openPill=p=>{const i=p.oi||openInfo(p);return `<span class="pill stat ${i.
 const svcPills=p=>(p.live?`<span class="pill live" title="Updated from Google ${ago(p.live)}">${p.isNew?"New · Live":"Live"}</span>`:"")+(p.dt===2?'<span class="pill svc">Drive-thru</span>':p.dt===1?'<span class="pill svc" title="Listed for drive-thru; not confirmed in reviews">Drive-thru?</span>':"")+(p.m==="counter"?'<span class="pill svc">Grab &amp; go</span>':"");
 
 function render(){compute();const k=mpt(st.dial);
-  $("#rule").innerHTML=`I'll drive <b>${k<1?k.toFixed(2):k.toFixed(1)} extra miles</b> for every <b>+0.1★</b>.<br><span class="meta">So a place rated half a star higher is worth ${(k*5).toFixed(1)} more miles.</span>`;
-  document.querySelectorAll("[data-p]").forEach(b=>b.setAttribute("aria-pressed",Math.abs(+b.dataset.p-st.dial)<3));
+  $("#dialmi").textContent=`${(k*5)<10?(k*5).toFixed(1):Math.round(k*5)} mi`;$("#greet").textContent=greeting();
+  $("#rule").innerHTML=`Each 0.1★ of trust-adjusted rating is worth <b>${k<1?k.toFixed(2):k.toFixed(1)} mi</b> of driving. Your favorites, feedback and mood add a little on top.`;
   const vis=filtered(),list=sorted(vis),fr=frontier(vis);
+  const best=list[0]?list[0].score:0,pct=p=>st.sort==="smart"?`<span class="match${p===list[0]?"":" sm"}">${matchPct(p,best)}% match</span>`:"";
   $("#count").innerHTML=`${list.length} of ${DATA.length} places`+(st.q?` · <span class="qchip">“${esc(st.q)}” <button class="chip" id="clrq">Clear search</button></span>`:"");
   if(st.q)$("#clrq").onclick=()=>{$("#q").value="";liveSearch("")};
-  $("#lh").textContent={smart:"Top picks for your dial",true:"Best food, trust-adjusted",rating:"Highest star rating",dist:"Closest first",reviews:"Most reviewed"}[st.sort];
-  drawChart(vis,new Set(sorted(vis,"smart").slice(0,3).map(p=>p.i)),k);
-  const best=list[0];
-  const more=$("#more");more.hidden=list.length<=st.shown;more.textContent=`Show ${Math.min(50,list.length-st.shown)} more`;
-  $("#list").innerHTML=list.length?list.slice(0,st.shown).map((p,n)=>{
-    let why="";
-    if(st.sort==="smart"&&n>0&&best)why=`<div class="why">Would need to be ${((best.score-p.score)*k).toFixed(1)} mi closer (or ${((best.score-p.score)/10).toFixed(2)}★ better) to tie #1.</div>`;
-    if(st.sort==="smart"&&n===0&&list[1])why=`<div class="why">Leads #2 by the equivalent of ${((p.score-list[1].score)*k).toFixed(1)} miles.</div>`;
-    return `<li class="card tap" id="p${p.i}" tabindex="0" aria-label="${esc(p.n)}: tap for details, hours and menu"><div class="rank">${n+1}</div>
-      <div class="top"><h3 class="name">${esc(p.n)}</h3><div class="chips">${fr.has(p.i)?'<span class="pill badge" title="Nothing visible is both closer and better">No-brainer</span>':""}${svcPills(p)}${openPill(p)}</div></div>
-      <div class="meta">${esc(p.c)} · ${budgetTxt(p)} · ${esc(p.a)}</div>
-      <div class="stats"><span><span class="star">★</span> ${p.r.toFixed(1)} <span class="meta">(${p.v.toLocaleString()})</span></span><span class="true" title="Trust-adjusted rating">${p.adj.toFixed(2)} adj</span><span>~${p.d.toFixed(1)} mi</span></div>
-      <div style="grid-column:2"><p class="say">${esc(p.s)}</p>
-      <dl class="dl"><dt>Order</dt><dd>${esc(p.o)}</dd>${p.w&&p.w!=="None that repeat"?`<dt>Heads-up</dt><dd>${esc(p.w)}</dd>`:""}</dl>
-      ${why}<div class="links"><button class="linkbtn" data-detail="${p.i}">Hours, menu &amp; more ›</button><a href="${dirUrl(p)}" target="_blank" rel="noopener">Directions</a></div></div></li>`}).join("")
-    :`<li class="empty">Nothing matches. Raise the max miles or clear a filter.</li>`;
-  freshness();$("#fcount").textContent=filterCount()||"";$("#sheetdone").textContent=`Show ${list.length} places`;
+  $("#lh").textContent=list.length>1?(st.sort==="smart"?"More picks":{true:"Best food, trust-adjusted",rating:"Highest star rating",dist:"Closest first",reviews:"Most reviewed"}[st.sort]):"";
+  drawChart(vis,new Set(list.slice(0,3).map(p=>p.i)),k);
+  const h=list[0];
+  $("#hero").innerHTML=h?`<article class="hero" data-hero="${h.i}">
+      <div class="herotop"><span class="lbl">${st.q?"Top result":HEROTITLE[st.mood]||"Top pick"}</span>${pct(h)}</div>
+      <h2>${esc(h.n)}</h2><div class="meta">${esc(h.c)} · ${budgetTxt(h)} · ${h.d.toFixed(1)} mi</div>
+      <div class="dstatus">${openPill(h)}${svcPills(h)}${fr.has(h.i)?'<span class="pill badge">No-brainer</span>':""}</div>
+      <ul class="whys">${reasons(h,vis).slice(0,4).map(r=>`<li class="${r.worth?"worth":""}">${esc(r.t)}</li>`).join("")}</ul>
+      <p class="say" style="margin:0">${esc(h.s)}</p>
+      <div class="heroacts"><a class="btn primary" href="${dirUrl(h)}" target="_blank" rel="noopener" data-dir="${h.i}">Directions</a><a class="btn" href="${menuUrl(h)}" target="_blank" rel="noopener">Menu</a><button class="btn" data-detail="${h.i}">Hours &amp; details</button></div>
+      ${fbRow(h)}</article>`
+    :`<div class="pcard"><h2>Nothing fits right now</h2><p class="meta" style="margin:0">${st.late?"Few places are open late around here. Try another mood, or ":""}Try a different mood, drag the dial toward “Food is everything”, or open Fine-tune.</p></div>`;
+  const rest=list.slice(1);
+  const more=$("#more");more.hidden=rest.length<=st.shown;more.textContent=`Show ${Math.min(50,rest.length-st.shown)} more`;
+  $("#list").innerHTML=rest.slice(0,st.shown).map((p,n)=>{const r=reasons(p,vis).slice(0,2).map(x=>esc(x.t)).join(" · ");
+    return `<li class="card tap" id="p${p.i}" tabindex="0" aria-label="${esc(p.n)}: tap for details, hours and menu"><div class="rank">${n+2}</div>
+      <div class="top"><h3 class="name">${esc(p.n)}</h3>${pct(p)}</div>
+      <div class="meta">${esc(p.c)} · ${budgetTxt(p)} · ${p.d.toFixed(1)} mi</div>
+      <div class="whyline">${r}</div>
+      <div class="chips">${openPill(p)}${svcPills(p)}${FB[p.id]?.v==="love"?'<span class="pill live">♥ Loved</span>':FB[p.id]?.v==="been"?'<span class="pill svc">✓ Been</span>':""}</div></li>`}).join("");
+  freshness();if($("#fcount"))$("#fcount").textContent=filterCount()||"";$("#sheetdone").textContent=`Show ${list.length} places`;
   if(!spinning)buildWheel();
-  updateMap(vis,new Set(sorted(vis,"smart").slice(0,3).map(p=>p.i)));
+  updateMap(vis,new Set(list.slice(0,3).map(p=>p.i)));
 }
 
 function drawChart(vis,top3,k){const W=360,H=220,L=34,R=10,T=10,B=28;
@@ -702,6 +794,150 @@ function setupSettings(){$("#gear").onclick=openSettings;
   $("#checkupd").onclick=()=>{if(isApp)Native.checkWebUpdate();checkRelease(true)};
   document.addEventListener("click",e=>{if(e.target.id==="addkey"){e.preventDefault();openSettings()}});}
 
+/* ---------- Taste profile, moods and personal ranking ---------- */
+// Score units: 1 point = 0.1 trust-adjusted star. Distance costs 1 point per k miles (the dial).
+const PICK_CUISINES=["Mexican","Japanese","Chinese","Korean","Thai","Vietnamese","Filipino & Hawaiian","Indian","Mediterranean & Greek","Latin & Peruvian","Italian","Steak & Seafood","BBQ & Soul","Chicken","Burgers & Pizza","Breakfast & Brunch","Coffee & Dessert","Vegan"];
+const DEFPROF={done:false,start:"me",everyday:6,special:20,budget:40,loves:[],never:[],diet:[],dtLike:false,hideBeen:false};
+let PROF=Object.assign({},DEFPROF,store.get("profile",{}));
+let FB=store.get("fb",{});     // place id -> {v:"love"|"nope"|"been", t, n, c:[cuisines]}
+let HIST=store.get("hist",[]); // Directions taps -> {d, t}
+let CATW={};
+const saveProf=()=>store.set("profile",PROF);
+const dialFromMiles=mi=>{const k=Math.max(.15,Math.min(12,mi/10));return Math.max(0,Math.min(100,Math.round(100*Math.log(k/.15)/Math.log(80))))};
+
+const MOODS=[
+  {k:"now",n:"Right now",a:()=>({dial:dialFromMiles(PROF.everyday),maxd:Math.max(PROF.special,10),open:true,budget:PROF.budget>=60?999:PROF.budget+15})},
+  {k:"breakfast",n:"Breakfast",a:()=>({dial:dialFromMiles(PROF.everyday*.8),maxd:Math.max(PROF.special,10),open:true,budget:999}),
+    boost:p=>p.cats.includes("Breakfast & Brunch")?3:p.cats.includes("Coffee & Dessert")?1.5:-2.5,why:"Breakfast spot"},
+  {k:"lunch",n:"Lunch break",a:()=>({dial:dialFromMiles(Math.min(PROF.everyday,6)*.6),maxd:Math.min(10,Math.max(PROF.everyday,5)),open:true,budget:Math.min(PROF.budget,25)}),
+    boost:p=>p.m==="counter"?1:0,why:"Quick counter service"},
+  {k:"date",n:"Date night",a:()=>({dial:dialFromMiles(PROF.special),maxd:Math.max(PROF.special,15),open:true,budget:999,minr:100}),
+    boost:p=>p.m==="sit"?1.5:-3,why:"Sit-down spot"},
+  {k:"late",n:"Late night",a:()=>({dial:dialFromMiles(PROF.everyday),maxd:Math.max(PROF.special,10),open:true,budget:999,late:true})},
+  {k:"treat",n:"Treat yourself",a:()=>({dial:dialFromMiles(PROF.special*1.5),maxd:Math.max(PROF.special*1.5,25),open:false,budget:999})},
+];
+function autoMood(){const {day,min}=vegasNow();if(min>=5*60&&min<10.5*60)return"breakfast";if(day<5&&min>=11*60&&min<14*60)return"lunch";if(min>=21.5*60||min<4*60)return"late";return"now"}
+function greeting(){const {min}=vegasNow();return min<4*60?"Late-night cravings?":min<11*60?"Good morning":min<17*60?"Good afternoon":min<21.5*60?"Good evening":"Late-night cravings?"}
+const HEROTITLE={now:"Your pick right now",breakfast:"Breakfast pick",lunch:"Lunch pick",date:"Date-night pick",late:"Late-night pick",treat:"Worth the drive"};
+
+function setMood(k){const m=MOODS.find(x=>x.k===k)||MOODS[0],a=m.a();st.mood=m.k;
+  st.dial=a.dial;st.maxd=Math.round(a.maxd);st.open=a.open;st.budget=a.budget;st.minr=a.minr||0;st.late=!!a.late;st.shown=50;syncControls();render()}
+function syncControls(){$("#dial").value=st.dial;$("#maxd").value=st.maxd;$("#minr").value=st.minr;$("#opennow").checked=st.open;$("#hidebeen").checked=!!PROF.hideBeen;
+  const opts=[15,25,40,60,999];$("#budget").value=String(opts.find(o=>o>=st.budget)??999);
+  document.querySelectorAll("#moods [data-mood]").forEach(b=>{b.setAttribute("aria-pressed",b.dataset.mood===st.mood);if(b.dataset.mood===st.mood)try{b.scrollIntoView({block:"nearest",inline:"nearest"})}catch(e){}})}
+function renderMoods(){$("#moods").innerHTML=MOODS.map(m=>`<button class="mood" data-mood="${m.k}" aria-pressed="${m.k===st.mood}">${m.n}</button>`).join("")+
+  `<button class="mood filt" id="moodfilt">Fine-tune<span class="badge" id="fcount"></span></button>`}
+
+function catWeights(){const w={};for(const id in FB){const f=FB[id],s=f.v==="love"?.6:f.v==="nope"?-.6:0;(f.c||[]).forEach(c=>w[c]=(w[c]||0)+s)}
+  for(const c in w)w[c]=Math.max(-2,Math.min(2,w[c]));return w}
+const isLate=p=>p.oi&&p.oi.s!=="closed"&&(p.oi.t==="Open 24 hours"||(p.oi.end!=null&&(p.oi.end>=23*60||p.oi.end<5*60)));
+function personal(p){let b=0;const why=[];
+  const fav=p.cats.find(c=>PROF.loves.includes(c));if(fav){b+=3;why.push({t:`One of your favorites: ${fav}`,w:3})}
+  let cw=0;p.cats.forEach(c=>cw+=CATW[c]||0);b+=cw;if(cw>.5&&!fav)why.push({t:`You tend to like ${p.cats[0]}`,w:2.4});
+  const f=FB[p.id];if(f&&f.v==="love"){b+=3;why.push({t:"You loved it",w:4})}
+  const m=MOODS.find(x=>x.k===st.mood);if(m&&m.boost){const mb=m.boost(p);b+=mb;if(mb>0&&m.why)why.push({t:m.why,w:1.3})}
+  if(PROF.dtLike&&p.dt>0&&(st.mood==="now"||st.mood==="lunch")){b+=1;why.push({t:"Has a drive-thru",w:1.4})}
+  if((PROF.diet.includes("vegan")||PROF.diet.includes("vegetarian"))&&/vegan|vegetarian/i.test(p.c+" "+p.s+" "+p.o)){b+=2;why.push({t:"Plant-based friendly",w:2.6})}
+  if(PROF.diet.includes("halal")&&/halal/i.test(p.n+" "+p.c+" "+p.s)){b+=2;why.push({t:"Halal",w:2.6})}
+  if(PROF.diet.includes("gf")&&/gluten/i.test(p.s+" "+p.o+" "+p.w)){b+=1.5;why.push({t:"Gluten-free options",w:2.2})}
+  if(PROF.budget<999){const over=lowOf(p)-PROF.budget;if(over>0)b-=over/5;else if(lowOf(p)<=PROF.budget*.6)why.push({t:"Easy on your budget",w:.9})}
+  if(p.oi&&p.oi.s==="soon"&&p.oi.left<=30)b-=1.5;
+  p.why=why;return b}
+function worthLine(p,vis){const c=p.cats[0];if(!c)return"";const same=vis.filter(q=>q.cats[0]===c);if(same.length<2)return"";
+  const near=same.reduce((a,b)=>b.d<a.d?b:a);if(near===p)return`Closest ${c} spot to you`;
+  const extra=p.d-near.d;if(extra>.3&&p.score>near.score)return`Worth ${extra.toFixed(1)} extra mi over ${near.n.replace(/\s*\(.*\)$/,"").replace(/\s*[-–|].*$/,"")}`;return""}
+function reasons(p,vis){const r=(p.why||[]).slice();
+  r.push({t:p.v>=300?`${p.r.toFixed(1)}★ from ${p.v.toLocaleString()} reviews`:`${p.r.toFixed(1)}★, only ${p.v} reviews so far`,w:p.r>=4.7?2:1.2});
+  const w=worthLine(p,vis);if(w)r.push({t:w,w:2.5,worth:1});
+  r.push({t:p.d<1?"Less than a mile away":`${p.d.toFixed(1)} mi from you`,w:p.d<2?1.6:.8});
+  return r.sort((a,b)=>b.w-a.w)}
+const matchPct=(p,best)=>Math.round(60+39*Math.exp(-Math.max(0,best-p.score)/5));
+const fbRow=p=>{const v=FB[p.id]?.v;return `<div class="fb" role="group" aria-label="Your feedback">
+  <button class="fbb" data-fb="love" data-id="${p.i}" aria-pressed="${v==="love"}">♥ Loved it</button>
+  <button class="fbb" data-fb="nope" data-id="${p.i}" aria-pressed="${v==="nope"}">✕ Not for me</button>
+  <button class="fbb" data-fb="been" data-id="${p.i}" aria-pressed="${v==="been"}">✓ Been there</button></div>`};
+
+let toastT=null;
+function toast(msg,undo){const t=$("#toast");t.innerHTML=`<span>${esc(msg)}</span>${undo?'<button id="tundo">Undo</button>':""}`;t.hidden=false;
+  if(undo)$("#tundo").onclick=()=>{undo();t.hidden=true};clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3500)}
+function setFeedback(i,v){const p=DATA[i];if(!p)return;const prev=FB[p.id]?{...FB[p.id]}:null;
+  if(prev&&prev.v===v)delete FB[p.id];else FB[p.id]={v,t:Date.now(),n:p.n,c:p.cats};
+  store.set("fb",FB);CATW=catWeights();render();if($("#detail").open)openDetail(i);if(!$("#v-profile").hidden)renderProfile();
+  const restore=()=>{if(prev)FB[p.id]=prev;else delete FB[p.id];store.set("fb",FB);CATW=catWeights();render();if($("#detail").open)openDetail(i);if(!$("#v-profile").hidden)renderProfile()};
+  if(!FB[p.id])toast("Feedback removed.",restore);
+  else if(v==="love")toast(`Noted. You'll see more like ${p.n.replace(/\s*\(.*\)$/,"")}.`,restore);
+  else if(v==="nope")toast("Hidden. You'll see fewer places like it.",restore);
+  else toast(PROF.hideBeen?"Marked as been there, and hidden from your list.":"Marked as been there.",restore)}
+
+/* Learn real driving habits from Directions taps */
+function noteTrip(i){const p=DATA[i];if(!p)return;HIST.push({d:+p.d.toFixed(1),t:Date.now()});HIST=HIST.filter(h=>Date.now()-h.t<90*864e5).slice(-20);store.set("hist",HIST);
+  if(HIST.length<4)return;const ds=HIST.slice(-8).map(h=>h.d).sort((a,b)=>a-b),med=ds[Math.floor(ds.length/2)];
+  const sug=Math.max(1,Math.round(med));if(Math.abs(sug-PROF.everyday)<2||store.get("sugAt",0)>Date.now()-7*864e5)return;
+  if(med>PROF.everyday*1.4||med<PROF.everyday*.55){store.set("sugAt",Date.now());
+    setTimeout(()=>banner(`Your recent trips average about ${sug} mi, but your everyday distance is set to ${PROF.everyday} mi. Update it?`,"Set to "+sug+" mi",()=>{PROF.everyday=sug;saveProf();setMood(st.mood);$("#banner").hidden=true;toast("Everyday distance updated.")}),1200)}}
+
+/* ---------- Profile tab ---------- */
+function renderProfile(){const o=ORIGINS.find(x=>x.k===PROF.start)||ORIGINS[0];
+  const lst=v=>Object.entries(FB).filter(([,f])=>f.v===v).sort((a,b)=>b[1].t-a[1].t);
+  const item=([id,f])=>{const p=DATA.find(x=>x.id===id);return `<li>${p?`<button class="linkbtn" data-detail="${p.i}">${esc(f.n)}</button>`:esc(f.n)}<button class="chip" data-unfb="${esc(id)}">Remove</button></li>`};
+  const learned=Object.entries(CATW).filter(([,w])=>Math.abs(w)>=.5).sort((a,b)=>b[1]-a[1]);
+  const trips=HIST.length?(HIST.reduce((a,h)=>a+h.d,0)/HIST.length).toFixed(1):null;
+  const sec=(t,v,empty)=>{const l=lst(v);return `<section class="pcard"><h2>${t} <span class="meta">(${l.length})</span></h2>${l.length?`<ul class="plist">${l.map(item).join("")}</ul>`:`<p class="meta" style="margin:0">${empty}</p>`}</section>`};
+  $("#v-profile").innerHTML=`
+  <section class="pcard"><h2>Your taste profile</h2>
+    <dl class="kv"><dt>Usually from</dt><dd>${esc(o.n)}</dd><dt>Everyday drive</dt><dd>up to ${PROF.everyday} mi</dd><dt>For something special</dt><dd>up to ${PROF.special} mi</dd>
+      <dt>Budget</dt><dd>${PROF.budget>=999?"Any":"About $"+PROF.budget+" a person"}</dd>
+      <dt>Loves</dt><dd>${PROF.loves.length?PROF.loves.map(c=>`<span class="tagc">${esc(c)}</span>`).join(""):"Not set"}</dd>
+      <dt>Never</dt><dd>${PROF.never.length?PROF.never.map(c=>`<span class="tagc no">${esc(c)}</span>`).join(""):"Nothing ruled out"}</dd>
+      <dt>Diet</dt><dd>${PROF.diet.length?PROF.diet.map(d=>({vegetarian:"Vegetarian",vegan:"Vegan",halal:"Halal",gf:"Gluten-free"}[d])).join(", "):"No restrictions"}${PROF.dtLike?" · likes drive-thrus":""}</dd></dl>
+    <div class="btnrow"><button class="btn primary" id="editprof">Edit profile</button><button class="btn" id="opensettings">Google key &amp; app settings</button></div></section>
+  <section class="pcard"><h2>What it's learned</h2>
+    ${learned.length?`<p style="margin:0">From your ♥ and ✕ taps: ${learned.map(([c,w])=>`<span class="tagc ${w<0?"no":""}">${w>0?"more":"less"} ${esc(c)}</span>`).join("")}</p>`:`<p class="meta" style="margin:0">Tap ♥ Loved it or ✕ Not for me on any place and your list will shift toward what you like.</p>`}
+    <p class="meta" style="margin:0">${trips?`Your last ${HIST.length} trips averaged ${trips} mi. If that drifts from your everyday distance, the app will offer to adjust it.`:"When you tap Directions, the app learns how far you actually drive."}</p>
+    <label class="toggle"><input type="checkbox" id="phidebeen" ${PROF.hideBeen?"checked":""}> Hide places I've been (show me new spots)</label></section>
+  ${sec("♥ Loved","love","Nothing yet.")}
+  ${sec("✓ Been there","been","Nothing yet.")}
+  ${sec("✕ Not for me","nope","Nothing hidden.")}
+  <section class="pcard"><h2>Start over</h2><p class="meta" style="margin:0">Clears your profile, feedback and trip history on this phone.</p><div class="btnrow"><button class="btn" id="resetall">Reset everything</button></div></section>`;
+  $("#editprof").onclick=()=>openOnboarding();$("#opensettings").onclick=openSettings;
+  $("#phidebeen").onchange=e=>{PROF.hideBeen=e.target.checked;saveProf();syncControls();render()};
+  $("#v-profile").querySelectorAll("[data-unfb]").forEach(b=>b.onclick=()=>{delete FB[b.dataset.unfb];store.set("fb",FB);CATW=catWeights();render();renderProfile()});
+  const rb=$("#resetall");rb.onclick=()=>{if(rb.dataset.arm){["profile","fb","hist","sugAt"].forEach(k=>store.set(k,null));PROF=Object.assign({},DEFPROF);FB={};HIST=[];CATW={};openOnboarding()}
+    else{rb.dataset.arm=1;rb.textContent="Tap again to confirm";setTimeout(()=>{rb.dataset.arm="";rb.textContent="Reset everything"},4000)}}}
+
+/* ---------- Onboarding ---------- */
+let OB=null,obStep=0;
+function openOnboarding(){OB=JSON.parse(JSON.stringify(PROF));obStep=0;$("#onb").hidden=false;document.body.style.overflow="hidden";drawOB()}
+function closeOnboarding(save){if(save){OB.done=true;PROF=OB;saveProf();st.origin=PROF.start;store.set("origin",st.origin);$("#origin").value=st.origin;if(st.origin==="me")startGPS()}
+  else if(!PROF.done){PROF.done=true;saveProf()}
+  $("#onb").hidden=true;document.body.style.overflow="";setMood(autoMood());showTab("list");if(save)toast("Your list is ready.")}
+const OBSTEPS=5;
+function drawOB(){$("#obdots").innerHTML=Array.from({length:OBSTEPS},(_,i)=>`<i class="${i<=obStep?"on":""}"></i>`).join("");
+  $("#obback").style.visibility=obStep?"visible":"hidden";$("#obnext").textContent=obStep===OBSTEPS-1?"Build my list":"Next";
+  const el=$("#obstep");
+  if(obStep===0)el.innerHTML=`<h2 id="onbh">Let's build your list.</h2><p>A few quick questions so every ranking fits how you eat and how far you'll drive. Where do you usually start from?</p>
+    <div class="obgrid">${ORIGINS.map(o=>`<button class="obchip" data-v="${o.k}" aria-pressed="${OB.start===o.k}">${esc(o.n)}</button>`).join("")}</div>`;
+  if(obStep===1)el.innerHTML=`<h2 id="onbh">How far will you drive?</h2><p>This sets your dial. You can always change it on the home screen.</p>
+    <label class="obrange">On a normal day, up to <b id="obev">${OB.everyday} mi</b><input type="range" id="obevr" min="1" max="20" value="${OB.everyday}"></label>
+    <label class="obrange">For something really good, up to <b id="obsp">${OB.special} mi</b><input type="range" id="obspr" min="3" max="45" value="${OB.special}"></label>`;
+  if(obStep===2)el.innerHTML=`<h2 id="onbh">What do you usually spend?</h2><p>Per person, before tip. Pricier places sink in your list instead of disappearing.</p>
+    <div class="obgrid">${[[15,"About $15"],[25,"About $25"],[40,"About $40"],[60,"About $60"],[999,"Doesn't matter"]].map(([v,l])=>`<button class="obchip" data-v="${v}" aria-pressed="${OB.budget===v}">${l}</button>`).join("")}</div>`;
+  if(obStep===3)el.innerHTML=`<h2 id="onbh">What do you love?</h2><p>Tap once for ♥ love. Tap again for never. A third tap clears it.</p>
+    <div class="obgrid">${PICK_CUISINES.map(c=>`<button class="obchip ${OB.loves.includes(c)?"love":OB.never.includes(c)?"never":""}" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>`;
+  if(obStep===4)el.innerHTML=`<h2 id="onbh">Anything else?</h2><p>Places that fit get a boost.</p>
+    <div class="obgrid">${[["vegetarian","Vegetarian"],["vegan","Vegan"],["halal","Halal"],["gf","Gluten-free"]].map(([v,l])=>`<button class="obchip" data-v="${v}" aria-pressed="${OB.diet.includes(v)}">${l}</button>`).join("")}</div>
+    <div class="obgrid"><button class="obchip" data-dt="1" aria-pressed="${OB.dtLike}">🚗 I like drive-thrus for quick meals</button></div>`;
+  el.querySelectorAll(".obchip").forEach(b=>b.onclick=()=>{const v=b.dataset.v;
+    if(obStep===0)OB.start=v;
+    if(obStep===2)OB.budget=+v;
+    if(obStep===3){if(OB.loves.includes(v)){OB.loves=OB.loves.filter(x=>x!==v);OB.never.push(v)}else if(OB.never.includes(v))OB.never=OB.never.filter(x=>x!==v);else OB.loves.push(v)}
+    if(obStep===4){if(b.dataset.dt)OB.dtLike=!OB.dtLike;else OB.diet=OB.diet.includes(v)?OB.diet.filter(x=>x!==v):OB.diet.concat(v)}
+    drawOB()});
+  if(obStep===1){$("#obevr").oninput=e=>{OB.everyday=+e.target.value;$("#obev").textContent=OB.everyday+" mi";if(OB.special<OB.everyday){OB.special=OB.everyday;$("#obspr").value=OB.special;$("#obsp").textContent=OB.special+" mi"}};
+    $("#obspr").oninput=e=>{OB.special=Math.max(+e.target.value,OB.everyday);$("#obsp").textContent=OB.special+" mi"}}}
+function setupOnboarding(){$("#obnext").onclick=()=>{if(obStep<OBSTEPS-1){obStep++;drawOB();$("#onb").scrollTop=0}else closeOnboarding(true)};
+  $("#obback").onclick=()=>{if(obStep>0){obStep--;drawOB()}};$("#obskip").onclick=()=>closeOnboarding(false)}
+
 /* ---------- Restaurant details ---------- */
 const IC={dir:'<path d="M3 11 21 3l-8 18-2-8-8-2z"/>',menu:'<path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/>',call:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
   web:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',rev:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>'};
@@ -713,9 +949,11 @@ function openDetail(i){const p=DATA[i];if(!p)return;compute();const info=openInf
   $("#dbody").innerHTML=`<div class="dwrap">
     <div class="dhead"><div><span class="lbl">${esc(p.c)}</span><h2 id="dname">${esc(p.n)}</h2><div class="meta">${budgetTxt(p)} · ~${p.d.toFixed(1)} mi away</div></div><button class="dx" id="dclose" aria-label="Close">×</button></div>
     <div class="dstatus">${openPill(p)}${svcPills(p)}</div>
+    <ul class="whys">${reasons(p,filtered()).slice(0,3).map(r=>`<li class="${r.worth?"worth":""}">${esc(r.t)}</li>`).join("")}</ul>
+    ${fbRow(p)}
     <div class="stats"><span><span class="star">★</span> ${p.r.toFixed(1)} <span class="meta">(${p.v.toLocaleString()} reviews)</span></span><span class="true">${p.adj.toFixed(2)} adj</span></div>
     <div class="acts">
-      <a class="act primary" href="${dirUrl(p)}" target="_blank" rel="noopener">${icon("dir")}Directions</a>
+      <a class="act primary" href="${dirUrl(p)}" target="_blank" rel="noopener" data-dir="${p.i}">${icon("dir")}Directions</a>
       <a class="act" href="${menuUrl(p)}" target="_blank" rel="noopener">${icon("menu")}Menu</a>
       ${p.ph?`<a class="act" href="tel:${p.ph.replace(/[^\d+]/g,"")}">${icon("call")}Call</a>`:""}
       ${p.web?`<a class="act" href="${esc(p.web)}" target="_blank" rel="noopener">${icon("web")}Website</a>`:""}
@@ -732,27 +970,34 @@ function setupDetail(){const dlg=$("#detail");
   dlg.addEventListener("click",e=>{if(e.target===dlg)dlg.close()});
   dlg.addEventListener("close",()=>{if(history.state&&history.state.wtdDetail)history.back()});
   addEventListener("popstate",()=>{if(dlg.open)dlg.close()});
-  document.addEventListener("click",e=>{const d=e.target.closest("[data-detail]");if(d){e.preventDefault();openDetail(+d.dataset.detail);return}
-    const card=e.target.closest(".card.tap");if(card&&!e.target.closest("a,button"))openDetail(+card.id.slice(1))});
+  document.addEventListener("click",e=>{const fb=e.target.closest("[data-fb]");if(fb){e.preventDefault();setFeedback(+fb.dataset.id,fb.dataset.fb);return}
+    const dr=e.target.closest("[data-dir]");if(dr)noteTrip(+dr.dataset.dir);
+    const d=e.target.closest("[data-detail]");if(d){e.preventDefault();openDetail(+d.dataset.detail);return}
+    const card=e.target.closest(".card.tap,.hero");if(card&&!e.target.closest("a,button"))openDetail(card.dataset.hero!=null?+card.dataset.hero:+card.id.slice(1))});
   $("#list").addEventListener("keydown",e=>{const card=e.target.closest(".card.tap");if(card&&(e.key==="Enter"||e.key===" ")&&e.target===card){e.preventDefault();openDetail(+card.id.slice(1))}});}
 
-function showTab(w){[["list","#t-list","#v-list"],["map","#t-map","#v-map"],["wheel","#t-wheel","#v-wheel"]].forEach(([k,t,v])=>{$(t).setAttribute("aria-selected",k===w);$(v).hidden=k!==w});
+function showTab(w){[["list","#t-list","#v-list"],["map","#t-map","#v-map"],["wheel","#t-wheel","#v-wheel"],["profile","#t-profile","#v-profile"]].forEach(([k,t,v])=>{$(t).setAttribute("aria-selected",k===w);$(v).hidden=k!==w});
+  $("#homectl").hidden=w==="profile";if(w==="profile")renderProfile();
   document.querySelectorAll("#bnav [data-v]").forEach(b=>b.setAttribute("aria-current",b.dataset.v===w));closeSheet();
   if(w==="wheel")buildWheel();if(w==="map"){initMap();render();setTimeout(()=>map&&map.invalidateSize(),60)}
   if(matchMedia("(max-width:959px)").matches)window.scrollTo({top:0,behavior:"auto"})}
-function openSheet(){document.body.classList.add("sheet");document.querySelectorAll("#bnav [data-v]").forEach(b=>b.setAttribute("aria-current",b.dataset.v==="filters"))}
+function openSheet(){document.body.classList.add("sheet");}
 function closeSheet(){if(!document.body.classList.contains("sheet"))return;document.body.classList.remove("sheet");
-  const cur=["list","map","wheel"].find(k=>!$("#v-"+k).hidden)||"list";document.querySelectorAll("#bnav [data-v]").forEach(b=>b.setAttribute("aria-current",b.dataset.v===cur))}
-function filterCount(){return st.cats.size+st.svc.size+(st.budget<999)+(st.open?1:0)+(st.minr>0)+(st.maxd!==30)}
+  const cur=["list","map","wheel","profile"].find(k=>!$("#v-"+k).hidden)||"list";document.querySelectorAll("#bnav [data-v]").forEach(b=>b.setAttribute("aria-current",b.dataset.v===cur))}
+function filterCount(){return st.cats.size+st.svc.size+(st.sort!=="smart")}
 
 function setup(){
   const rr=()=>{st.shown=50;render()};
   $("#origin").innerHTML=ORIGINS.map(o=>`<option value="${o.k}">${o.n}</option>`).join("");$("#origin").value=st.origin;
-  $("#dial").value=st.dial;
+  renderMoods();CATW=catWeights();setupOnboarding();
   $("#cuis").innerHTML=CATS.map(([n])=>`<button class="chip" aria-pressed="false" data-c="${n}">${n}</button>`).join("");
   $("#svc").innerHTML=SVC.map(([k,n])=>`<button class="chip" aria-pressed="false" data-s="${k}">${n}</button>`).join("");
   const toSmart=()=>{if(st.sort!=="smart"){st.sort="smart";$("#sort").value="smart"}};
-  $("#dial").addEventListener("input",e=>{st.dial=+e.target.value;store.set("dial",st.dial);toSmart();rr()});
+  $("#dial").addEventListener("input",e=>{st.dial=+e.target.value;toSmart();rr()});
+  $("#moods").onclick=e=>{const m=e.target.closest("[data-mood]");if(m){toSmart();setMood(m.dataset.mood);return}
+    if(e.target.closest("#moodfilt")){if(matchMedia("(max-width:959px)").matches)openSheet();else $("#side").scrollIntoView({behavior:"smooth",block:"start"})}};
+  $("#searchbtn").onclick=()=>{const r=$("#searchrow"),open=r.hidden;r.hidden=!open;$("#searchbtn").setAttribute("aria-expanded",open);if(open)$("#q").focus();else if(st.q){$("#q").value="";liveSearch("")}};
+  $("#hidebeen").onchange=e=>{PROF.hideBeen=e.target.checked;saveProf();rr()};
   document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{st.dial=+b.dataset.p;$("#dial").value=st.dial;store.set("dial",st.dial);toSmart();rr()});
   $("#origin").onchange=e=>{st.origin=e.target.value;store.set("origin",st.origin);if(st.origin==="me")startGPS();rr();liveRefresh(false)};
   $("#sort").onchange=e=>{st.sort=e.target.value;rr()};
@@ -769,15 +1014,16 @@ function setup(){
   $("#sform").onsubmit=e=>{e.preventDefault();liveSearch($("#q").value.trim())};
   $("#q").addEventListener("search",()=>{if(!$("#q").value)liveSearch("")});
   setupSettings();setupDetail();
-  $("#bnav").onclick=e=>{const b=e.target.closest("[data-v]");if(!b)return;b.dataset.v==="filters"?(document.body.classList.contains("sheet")?closeSheet():openSheet()):showTab(b.dataset.v)};
+  $("#bnav").onclick=e=>{const b=e.target.closest("[data-v]");if(b)showTab(b.dataset.v)};
   $("#scrim").onclick=closeSheet;$("#sheetdone").onclick=closeSheet;
   document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
-  $("#t-list").onclick=()=>showTab("list");$("#t-map").onclick=()=>showTab("map");$("#t-wheel").onclick=()=>showTab("wheel");
+  $("#t-list").onclick=()=>showTab("list");$("#t-map").onclick=()=>showTab("map");$("#t-wheel").onclick=()=>showTab("wheel");$("#t-profile").onclick=()=>showTab("profile");
   ["#wmax","#wmin","#wsize","#wweight"].forEach(s=>$(s).onchange=()=>{if(!spinning)buildWheel()});
   $("#spin").onclick=spin;$("#spin2").onclick=spin;
   matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>drawWheel());
   setInterval(()=>{st.checked=new Date();render()},5*60000);
-  reindex();render();
+  reindex();setMood(autoMood());
+  if(!PROF.done)openOnboarding();
   if(st.origin==="me")startGPS();
   liveRefresh(false);setTimeout(()=>checkRelease(false),3000);
   if(location.hash==="#wheel")showTab("wheel");if(location.hash==="#map")showTab("map");
