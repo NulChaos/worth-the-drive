@@ -300,6 +300,22 @@ dialog.detail::backdrop{background:rgba(0,0,0,.5)}
 #toast button{background:none;border:0;color:var(--neon);font:700 14px var(--body);cursor:pointer}
 @media(min-width:960px){#toast{bottom:24px}}
 @media(max-width:959px){.greet h1{font-size:30px}}
+.gallery{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;padding:12px 12px 0;scrollbar-width:none}
+.gallery::-webkit-scrollbar{display:none}
+.gph{position:relative;flex:0 0 82%;max-width:420px;height:210px;margin:0;border-radius:14px;overflow:hidden;background:var(--line);scroll-snap-align:start}
+.gph:only-child{flex-basis:100%}
+.gph img{width:100%;height:100%;object-fit:cover;display:block;animation:fadein .25s ease}
+.gph figcaption{position:absolute;left:8px;bottom:6px;font-size:11px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);max-width:90%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gsk{position:absolute;inset:0;background:linear-gradient(100deg,var(--line) 30%,var(--panel) 50%,var(--line) 70%);background-size:200% 100%;animation:shimmer 1.2s linear infinite}
+.gsk.off{animation:none;opacity:.5}
+.gmore{flex:0 0 auto;align-self:center;padding:0 14px;color:var(--accent);font-weight:600;text-decoration:none;white-space:nowrap}
+.gnote{flex:1;display:grid;gap:6px;padding:14px;border:1px dashed var(--line);border-radius:14px;color:var(--muted);font-size:14px}
+.gnote a{color:var(--accent);font-weight:600;text-decoration:none}
+.hero .cover{margin:-18px -18px 2px;height:170px;overflow:hidden;border-radius:19px 19px 0 0}
+.hero .cover img{width:100%;height:100%;object-fit:cover;display:block}
+@keyframes shimmer{to{background-position:-200% 0}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.gsk,.gph img{animation:none}}
 #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
 footer{color:var(--muted);font-size:12.5px;max-width:80ch}
 @media(prefers-reduced-motion:reduce){.pop,.spinning .ic{animation:none}}
@@ -564,7 +580,8 @@ function render(){compute();const k=mpt(st.dial);
   $("#lh").textContent=list.length>1?(st.sort==="smart"?"More picks":{true:"Best food, trust-adjusted",rating:"Highest star rating",dist:"Closest first",reviews:"Most reviewed"}[st.sort]):"";
   drawChart(vis,new Set(list.slice(0,3).map(p=>p.i)),k);
   const h=list[0];
-  $("#hero").innerHTML=h?`<article class="hero" data-hero="${h.i}">
+  const hp=h?heroPhoto(h):null;
+  $("#hero").innerHTML=h?`<article class="hero${hp?" hascover":""}" data-hero="${h.i}">${hp?`<div class="cover"><img src="${esc(hp)}" alt="Photo of ${esc(h.n)}" loading="lazy" onerror="this.parentNode.remove()"></div>`:""}
       <div class="herotop"><span class="lbl">${st.q?"Top result":HEROTITLE[st.mood]||"Top pick"}</span>${pct(h)}</div>
       <h2>${esc(h.n)}</h2><div class="meta">${esc(h.c)} · ${budgetTxt(h)} · ${h.d.toFixed(1)} mi</div>
       <div class="dstatus">${openPill(h)}${svcPills(h)}${fr.has(h.i)?'<span class="pill badge">No-brainer</span>':""}</div>
@@ -771,6 +788,42 @@ async function liveSearch(q){const o=origin();st.q=q;st.qIds=new Set();st.shown=
   try{const got=await gsearch("searchText",{textQuery:q,maxResultCount:20,locationBias:{circle:{center:{latitude:o.lat??36.11,longitude:o.lng??-115.18},radius:40000}}});
     st.qIds=new Set(ingest(got));setLive(`<b>Live:</b> ${got.length} Google results for “${esc(q)}”.`);render();showTab("list")}catch(e){setLive(liveErr(e))}}
 
+/* ---------- Photos (Google Places) ---------- */
+// The photo list per place is free to fetch; each photo image costs one "Place Details Photos" lookup
+// (about 1,000 free a month), so image URLs are cached and loaded only when scrolled into view.
+const PHOTO_CAP=900;
+let PHOTOS=store.get("photos",{});
+function ucount(k){const m=new Date().toISOString().slice(0,7),u=store.get("use_"+k,{m,n:0});return u.m===m?u:{m,n:0}}
+function ubump(k){const u=ucount(k);u.n++;store.set("use_"+k,u)}
+function savePhotos(){const ids=Object.keys(PHOTOS);if(ids.length>250)ids.sort((a,b)=>PHOTOS[a].t-PHOTOS[b].t).slice(0,ids.length-250).forEach(k=>delete PHOTOS[k]);store.set("photos",PHOTOS)}
+async function photoList(p){const k=gkey();if(!k)return{err:"nokey"};let e=PHOTOS[p.id];
+  if(!e||Date.now()-e.t>21*864e5){const r=await http("GET",`https://places.googleapis.com/v1/places/${encodeURIComponent(p.id)}`,{"X-Goog-Api-Key":k,"X-Goog-FieldMask":"photos"});
+    if(r.status!==200){const j=pj(r.text);return{err:j.error?.message||(r.status?"HTTP "+r.status:"No connection")}}
+    const j=pj(r.text);e={t:Date.now(),list:(j.photos||[]).slice(0,8).map(x=>({name:x.name,attr:(x.authorAttributions||[]).map(a=>a.displayName).filter(Boolean).join(", ")}))};PHOTOS[p.id]=e;savePhotos()}
+  return e}
+async function photoUri(ph){if(ph.uri&&Date.now()-ph.ut<5*864e5)return ph.uri;if(ucount("photo").n>=PHOTO_CAP)return null;const k=gkey();if(!k)return null;ubump("photo");
+  const r=await http("GET",`https://places.googleapis.com/v1/${ph.name}/media?maxWidthPx=900&skipHttpRedirect=true&key=${encodeURIComponent(k)}`,{});
+  const j=pj(r.text);if(j.photoUri){ph.uri=j.photoUri;ph.ut=Date.now();savePhotos();return ph.uri}return null}
+const photoFallback=p=>`<div class="gnote"><span>${!gkey()?'Add a Google key in Settings to see photos here.':ucount("photo").n>=PHOTO_CAP?"Photo limit for this month reached.":"No photos on Google for this place yet."}</span><a href="${mapsUrl(p)}" target="_blank" rel="noopener">See photos on Google ›</a></div>`;
+async function fillGallery(p){const g=$("#gallery");if(!g)return;
+  if(!gkey()){g.innerHTML=photoFallback(p);return}
+  const e=await photoList(p);if(!$("#gallery")||g.dataset.id!==p.id)return;
+  if(e.err||!e.list.length){g.innerHTML=photoFallback(p);return}
+  g.innerHTML=e.list.map((ph,n)=>`<figure class="gph" data-n="${n}"><div class="gsk"></div><figcaption>${ph.attr?"📷 "+esc(ph.attr):""}</figcaption></figure>`).join("")+`<a class="gmore" href="${mapsUrl(p)}" target="_blank" rel="noopener">More on Google ›</a>`;
+  const load=async fig=>{if(fig.dataset.done)return;fig.dataset.done=1;const ph=e.list[+fig.dataset.n],uri=await photoUri(ph);
+    if(!uri){fig.querySelector(".gsk").classList.add("off");return}
+    const img=new Image();img.alt=`Photo of ${p.n}`;img.decoding="async";img.onload=()=>{fig.querySelector(".gsk")?.remove();fig.prepend(img)};
+    img.onerror=async()=>{if(ph.uri&&!img.dataset.retry){img.dataset.retry=1;ph.uri=null;const u=await photoUri(ph);if(u)img.src=u}else fig.querySelector(".gsk")?.classList.add("off")};img.src=uri;
+    if(+fig.dataset.n===0&&DATA[p.i])render()};
+  const figs=[...g.querySelectorAll(".gph")];figs.slice(0,2).forEach(load);
+  if("IntersectionObserver" in window){const io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){io.unobserve(en.target);load(en.target)}}),{root:g,rootMargin:"0px 120px 0px 0px"});figs.slice(2).forEach(f=>io.observe(f))}
+  else figs.slice(2,4).forEach(load)}
+// Give the top pick a cover photo once it has been on screen for a moment (one photo per new pick).
+let heroT=null,heroFor=null;
+function heroPhoto(p){const ph=PHOTOS[p.id]?.list?.[0];if(ph&&ph.uri)return ph.uri;
+  if(gkey()&&heroFor!==p.id){heroFor=p.id;clearTimeout(heroT);heroT=setTimeout(async()=>{if(heroFor!==p.id)return;const e=await photoList(p);if(e.list&&e.list[0]){const u=await photoUri(e.list[0]);if(u&&heroFor===p.id)render()}},1500)}
+  return null}
+
 /* ---------- Location ---------- */
 let gpsWatch=null;
 function startGPS(){if(!navigator.geolocation||gpsWatch!=null)return;
@@ -779,7 +832,7 @@ function startGPS(){if(!navigator.geolocation||gpsWatch!=null)return;
   err=>{gpsFailed=true;gpsWatch=null;if(st.origin==="me"){render();setLive("Location is off, so distances are from Southwest Las Vegas. Turn on location or pick a starting point.");liveRefresh(false)}},{enableHighAccuracy:true,maximumAge:60000,timeout:20000})}
 
 /* ---------- Settings ---------- */
-function openSettings(){$("#gkey").value=gkey();$("#autolive").checked=store.get("autolive",true);const u=usage();$("#usage").textContent=`Live lookups this month: ${u.n} of ${CAP}.`;
+function openSettings(){$("#gkey").value=gkey();$("#autolive").checked=store.get("autolive",true);const u=usage();$("#usage").textContent=`Live lookups this month: ${u.n} of ${CAP}. Photos: ${ucount("photo").n} of ${PHOTO_CAP}.`;
   $("#ver").textContent=isApp?`App build ${Native.versionCode()} (${Native.versionName()}) · content ${String(Native.webSha()).slice(0,7)}${Native.repo()?` · updates from github.com/${Native.repo()}`:""}`:(matchMedia("(display-mode: standalone)").matches||navigator.standalone?"Home Screen web app":"Browser")+" · updates itself from GitHub each time it opens.";
   $("#keymsg").textContent="";$("#settings").showModal()}
 function setupSettings(){$("#gear").onclick=openSettings;
@@ -946,7 +999,7 @@ const cityOf=p=>(p.a.split(",").slice(-2,-1)[0]||"Las Vegas").trim();
 const menuUrl=p=>`https://www.google.com/search?q=${encodeURIComponent(p.n+" "+cityOf(p)+" menu")}`;
 function openDetail(i){const p=DATA[i];if(!p)return;compute();const info=openInfo(p),today=vegasNow().day;
   const hours=p.h&&p.h.length===7?`<table class="hours">${p.h.map((x,d)=>`<tr class="${d===today?"today":""}"><td>${DAYNAMES[d]}</td><td>${esc(dayStr(p,d))}</td></tr>`).join("")}</table>`:'<p class="meta" style="margin:0">Hours aren\'t listed. Check Google before you go.</p>';
-  $("#dbody").innerHTML=`<div class="dwrap">
+  $("#dbody").innerHTML=`<div class="gallery" id="gallery" data-id="${esc(p.id)}" aria-label="Photos"><figure class="gph"><div class="gsk"></div></figure><figure class="gph"><div class="gsk"></div></figure></div><div class="dwrap">
     <div class="dhead"><div><span class="lbl">${esc(p.c)}</span><h2 id="dname">${esc(p.n)}</h2><div class="meta">${budgetTxt(p)} · ~${p.d.toFixed(1)} mi away</div></div><button class="dx" id="dclose" aria-label="Close">×</button></div>
     <div class="dstatus">${openPill(p)}${svcPills(p)}</div>
     <ul class="whys">${reasons(p,filtered()).slice(0,3).map(r=>`<li class="${r.worth?"worth":""}">${esc(r.t)}</li>`).join("")}</ul>
@@ -965,7 +1018,7 @@ function openDetail(i){const p=DATA[i];if(!p)return;compute();const info=openInf
     <div class="dsec"><h3>Address</h3><div class="addr">${esc(p.a)}</div>${p.ph?`<div class="addr">${esc(p.ph)}</div>`:""}</div>
   </div>`;
   const dlg=$("#detail");if(!dlg.open){dlg.showModal();try{history.pushState({wtdDetail:1},"")}catch(e){}}
-  $("#dclose").onclick=()=>dlg.close();dlg.scrollTop=0}
+  $("#dclose").onclick=()=>dlg.close();dlg.scrollTop=0;fillGallery(p)}
 function setupDetail(){const dlg=$("#detail");
   dlg.addEventListener("click",e=>{if(e.target===dlg)dlg.close()});
   dlg.addEventListener("close",()=>{if(history.state&&history.state.wtdDetail)history.back()});
