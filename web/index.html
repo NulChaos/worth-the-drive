@@ -197,6 +197,36 @@ dialog input[type=password],dialog input[type=text]{width:100%;font:inherit;colo
   footer{font-size:11.5px}
 }
 @media(prefers-reduced-motion:reduce){.side{transition:none}}
+.card.tap{cursor:pointer;transition:border-color .15s,transform .1s}
+.card.tap:hover{border-color:var(--accent)}
+.card.tap:active{transform:scale(.995)}
+.linkbtn{font:inherit;font-weight:600;color:var(--accent);background:none;border:0;padding:0;cursor:pointer}
+.pill.stat{text-transform:none;letter-spacing:0;font-size:12px}
+.soon{color:var(--warn)}
+dialog.detail{padding:0;width:min(560px,calc(100vw - 32px));max-height:88dvh;overflow:auto;overscroll-behavior:contain}
+dialog.detail::backdrop{background:rgba(0,0,0,.5)}
+.dwrap{display:grid;gap:14px;padding:18px 18px calc(22px + env(safe-area-inset-bottom,0px))}
+.dhead{display:flex;justify-content:space-between;gap:10px;align-items:start}
+.dhead h2{font-family:var(--display);font-size:24px;line-height:1.1;margin:2px 0 4px;text-wrap:balance}
+.dx{font-size:26px;line-height:1;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:50%;width:38px;height:38px;flex:none;cursor:pointer}
+.dstatus{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.dstatus .pill.stat{font-size:14px;padding:4px 10px}
+.acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(68px,1fr));gap:8px}
+.act{display:grid;justify-items:center;gap:4px;padding:10px 4px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);text-decoration:none;font:600 13px var(--body)}
+.act svg{width:22px;height:22px;color:var(--accent)}
+.act.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.act.primary svg{color:#fff}
+.hours{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+.hours td{padding:6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.hours td:first-child{color:var(--muted);width:9em;white-space:nowrap}
+.hours tr.today td{font-weight:700;color:var(--ink)}
+.hours tr.today td:first-child::after{content:" · today";font-weight:600;color:var(--accent);font-size:12px}
+.dsec h3{font-family:var(--display);font-size:16px;margin:0 0 6px}
+.addr{user-select:text;color:var(--muted);font-size:14px}
+@media(max-width:959px){dialog.detail{width:100%;max-width:100%;margin:auto 0 0 0;border-radius:20px 20px 0 0;border-bottom:0;max-height:90dvh}
+  dialog.detail[open]{animation:sheetup .25s cubic-bezier(.2,.8,.2,1)}}
+@keyframes sheetup{from{transform:translateY(40%);opacity:.4}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){dialog.detail[open]{animation:none}}
 #confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
 footer{color:var(--muted);font-size:12.5px;max-width:80ch}
 @media(prefers-reduced-motion:reduce){.pop,.spinning .ic{animation:none}}
@@ -204,6 +234,7 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
 
 </head><body>
 <canvas id="confetti" aria-hidden="true"></canvas>
+<dialog id="detail" class="detail" aria-labelledby="dname"><div id="dbody"></div></dialog>
 <dialog id="settings" aria-labelledby="seth">
   <form method="dialog" id="setform" style="display:grid;gap:4px">
     <h2 id="seth">Settings</h2>
@@ -398,9 +429,23 @@ function ranges(str){if(!str)return null;if(/24 hours/i.test(str))return[[0,1440
   return str.split(",").map(part=>{const [a,b]=part.split("–");const mer=(b.match(/AM|PM/)||[])[0];let s=tm(a,mer),e=tm(b,mer);
     if(s!=null&&e!=null&&!/AM|PM/.test(a)&&s>e)s-=720; if(e<=s)e+=1440;return[s,e]});}
 const dayStr=(p,d)=>p.h[d].split(": ").slice(1).join(": ");
-function openState(p){if(p.tmp)return false;if(p.liveOpen!=null&&Date.now()-p.live<45*60e3)return p.liveOpen;if(!p.h||p.h.length!==7)return null;const {day,min}=vegasNow();
-  if((ranges(dayStr(p,day))||[]).some(([s,e])=>min>=s&&min<e))return true;
-  if((ranges(dayStr(p,(day+6)%7))||[]).some(([s,e])=>e>1440&&min<e-1440))return true;return false;}
+const DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],DAYNAMES=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+const fmtT=m=>{m=((m%1440)+1440)%1440;let h=Math.floor(m/60);const mm=m%60,ap=h>=12?"PM":"AM";h=h%12||12;return mm?`${h}:${String(mm).padStart(2,"0")} ${ap}`:`${h} ${ap}`};
+// Open/closed with context: "Open until 9 PM", "Closes soon · 8 PM" (under an hour left), "Closed · opens 11 AM".
+function openInfo(p){if(p.tmp)return{s:"closed",t:"Temporarily closed"};
+  const liveFresh=p.liveOpen!=null&&Date.now()-p.live<45*60e3;
+  if(!p.h||p.h.length!==7){if(liveFresh)return p.liveOpen?{s:"open",t:"Open now"}:{s:"closed",t:"Closed now"};return{s:null,t:"Hours not listed"}}
+  const {day,min}=vegasNow(),iv=[];
+  (ranges(dayStr(p,day))||[]).forEach(r=>iv.push(r));
+  (ranges(dayStr(p,(day+6)%7))||[]).forEach(([a,b])=>{if(b>1440)iv.push([a-1440,b-1440])});
+  const cur=iv.find(([a,b])=>min>=a&&min<b);
+  if(cur&&!(liveFresh&&p.liveOpen===false)){if(cur[1]-cur[0]>=1440)return{s:"open",t:"Open 24 hours"};const left=cur[1]-min;
+    return left<=60?{s:"soon",t:`Closes soon · ${fmtT(cur[1])}`,left}:{s:"open",t:`Open until ${fmtT(cur[1])}`}}
+  if(liveFresh&&p.liveOpen)return{s:"open",t:"Open now"};
+  for(let k=0;k<8;k++){const d=(day+k)%7;const nx=(ranges(dayStr(p,d))||[]).map(r=>r[0]+k*1440).filter(a=>a>min).sort((a,b)=>a-b)[0];
+    if(nx!=null)return{s:"closed",t:k===0?`Closed · opens ${fmtT(nx)}`:k===1?`Closed · opens tomorrow ${fmtT(nx)}`:`Closed · opens ${DAYS[d]} ${fmtT(nx)}`}}
+  return{s:"closed",t:"Closed"}}
+function openState(p){const i=openInfo(p);p.oi=i;return i.s==null?null:i.s!=="closed"}
 function todayHours(p){if(!p.h||p.h.length!==7)return"";return dayStr(p,vegasNow().day);}
 
 function compute(){const o=origin();const k=mpt(st.dial);
@@ -419,7 +464,7 @@ const price=p=>p==null?"":"$".repeat(p);
 const mapsUrl=p=>p.gurl||`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.n+" "+p.a)}&query_place_id=${p.id}`;
 const IOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
 const dirUrl=p=>IOS?`https://maps.apple.com/?daddr=${p.lat},${p.lng}&q=${encodeURIComponent(p.n)}`:`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(p.n+" "+p.a)}&destination_place_id=${p.id}`;
-const openPill=p=>p.tmp?'<span class="pill closed">Temporarily closed</span>':p.isOpen==null?'<span class="pill unk">Hours n/a</span>':p.isOpen?'<span class="pill open">Open</span>':'<span class="pill closed">Closed</span>';
+const openPill=p=>{const i=p.oi||openInfo(p);return `<span class="pill stat ${i.s==null?"unk":i.s==="soon"?"soon":i.s==="open"?"open":"closed"}">${esc(i.t)}</span>`};
 const svcPills=p=>(p.live?`<span class="pill live" title="Updated from Google ${ago(p.live)}">${p.isNew?"New · Live":"Live"}</span>`:"")+(p.dt===2?'<span class="pill svc">Drive-thru</span>':p.dt===1?'<span class="pill svc" title="Listed for drive-thru; not confirmed in reviews">Drive-thru?</span>':"")+(p.m==="counter"?'<span class="pill svc">Grab &amp; go</span>':"");
 
 function render(){compute();const k=mpt(st.dial);
@@ -436,13 +481,13 @@ function render(){compute();const k=mpt(st.dial);
     let why="";
     if(st.sort==="smart"&&n>0&&best)why=`<div class="why">Would need to be ${((best.score-p.score)*k).toFixed(1)} mi closer (or ${((best.score-p.score)/10).toFixed(2)}★ better) to tie #1.</div>`;
     if(st.sort==="smart"&&n===0&&list[1])why=`<div class="why">Leads #2 by the equivalent of ${((p.score-list[1].score)*k).toFixed(1)} miles.</div>`;
-    return `<li class="card" id="p${p.i}"><div class="rank">${n+1}</div>
+    return `<li class="card tap" id="p${p.i}" tabindex="0" aria-label="${esc(p.n)}: tap for details, hours and menu"><div class="rank">${n+1}</div>
       <div class="top"><h3 class="name">${esc(p.n)}</h3><div class="chips">${fr.has(p.i)?'<span class="pill badge" title="Nothing visible is both closer and better">No-brainer</span>':""}${svcPills(p)}${openPill(p)}</div></div>
       <div class="meta">${esc(p.c)} · ${budgetTxt(p)} · ${esc(p.a)}</div>
-      <div class="stats"><span><span class="star">★</span> ${p.r.toFixed(1)} <span class="meta">(${p.v.toLocaleString()})</span></span><span class="true" title="Trust-adjusted rating">${p.adj.toFixed(2)} adj</span><span>~${p.d.toFixed(1)} mi</span>${todayHours(p)?`<span class="meta">Today ${esc(todayHours(p))}</span>`:""}</div>
+      <div class="stats"><span><span class="star">★</span> ${p.r.toFixed(1)} <span class="meta">(${p.v.toLocaleString()})</span></span><span class="true" title="Trust-adjusted rating">${p.adj.toFixed(2)} adj</span><span>~${p.d.toFixed(1)} mi</span></div>
       <div style="grid-column:2"><p class="say">${esc(p.s)}</p>
       <dl class="dl"><dt>Order</dt><dd>${esc(p.o)}</dd>${p.w&&p.w!=="None that repeat"?`<dt>Heads-up</dt><dd>${esc(p.w)}</dd>`:""}</dl>
-      ${why}<div class="links"><a href="${dirUrl(p)}" target="_blank" rel="noopener">Directions</a><a href="${mapsUrl(p)}" target="_blank" rel="noopener">All reviews on Google</a></div></div></li>`}).join("")
+      ${why}<div class="links"><button class="linkbtn" data-detail="${p.i}">Hours, menu &amp; more ›</button><a href="${dirUrl(p)}" target="_blank" rel="noopener">Directions</a></div></div></li>`}).join("")
     :`<li class="empty">Nothing matches. Raise the max miles or clear a filter.</li>`;
   freshness();$("#fcount").textContent=filterCount()||"";$("#sheetdone").textContent=`Show ${list.length} places`;
   if(!spinning)buildWheel();
@@ -521,7 +566,7 @@ function reveal(p){fanfare();confetti();
     <div class="meta">${esc(p.c)} · ${budgetTxt(p)} · ~${p.d.toFixed(1)} mi · ${esc(p.a)}</div>
     <div class="stats"><span><span class="star">★</span> ${p.r.toFixed(1)} <span class="meta">(${p.v.toLocaleString()})</span></span><span class="true">${p.adj.toFixed(2)} adj</span>${svcPills(p)}${openPill(p)}</div>
     <p class="say">${esc(p.s)}</p><dl class="dl"><dt>Order</dt><dd>${esc(p.o)}</dd></dl>
-    <div class="links" style="font-size:15px"><a href="${dirUrl(p)}" target="_blank" rel="noopener">Take me there →</a><a href="${mapsUrl(p)}" target="_blank" rel="noopener">See reviews</a><a href="#" id="again">Spin again</a></div></div>`;
+    <div class="links" style="font-size:15px"><a href="${dirUrl(p)}" target="_blank" rel="noopener">Take me there →</a><a href="${mapsUrl(p)}" target="_blank" rel="noopener">See reviews</a><a href="#" data-detail="${p.i}">Details &amp; menu</a><a href="#" id="again">Spin again</a></div></div>`;
   $("#again").onclick=e=>{e.preventDefault();spin()};}
 
 /* ---------- Map ---------- */
@@ -547,7 +592,7 @@ function popupHtml(p,rank){return `<div class="pp"><span class="lbl">#${rank} ·
   <div class="chips" style="margin:2px 0 6px">${svcPills(p)}${openPill(p)}</div>
   <div class="meta">${budgetTxt(p)}</div><p class="say" style="font-size:13.5px;margin:6px 0">${esc(p.s)}</p>
   <div class="meta"><b>Order:</b> ${esc(p.o)}</div>
-  <div class="links"><a href="${dirUrl(p)}" target="_blank" rel="noopener">Directions</a><a href="${mapsUrl(p)}" target="_blank" rel="noopener">Reviews</a><a href="#" data-goto="${p.i}">In list</a></div></div>`}
+  <div class="links"><a href="${dirUrl(p)}" target="_blank" rel="noopener">Directions</a><a href="${mapsUrl(p)}" target="_blank" rel="noopener">Reviews</a><a href="#" data-detail="${p.i}">Details</a></div></div>`}
 function updateMap(vis,top3){if(!map)return;mapLayers.clearLayers();originLayer.clearLayers();
   const ranked=sorted(vis,"smart"),rank=new Map(ranked.map((p,n)=>[p.i,n+1]));
   const acc=css("--accent"),neon=css("--neon"),panel=css("--panel"),ink=css("--ink");
@@ -588,7 +633,7 @@ async function checkRelease(manual){if(!isApp)return manual&&banner("This versio
   else if(manual)banner(`You're on the latest app build (${Native.versionCode()}). Content updates download automatically.`);}
 
 /* ---------- Live Google Places ---------- */
-const FIELDS="places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.priceLevel,places.priceRange,places.primaryTypeDisplayName,places.types,places.regularOpeningHours.weekdayDescriptions,places.currentOpeningHours.openNow,places.takeout,places.dineIn,places.googleMapsUri,places.businessStatus";
+const FIELDS="places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.priceLevel,places.priceRange,places.primaryTypeDisplayName,places.types,places.regularOpeningHours.weekdayDescriptions,places.currentOpeningHours.openNow,places.takeout,places.dineIn,places.googleMapsUri,places.businessStatus,places.nationalPhoneNumber,places.websiteUri";
 const PL={PRICE_LEVEL_FREE:1,PRICE_LEVEL_INEXPENSIVE:1,PRICE_LEVEL_MODERATE:2,PRICE_LEVEL_EXPENSIVE:3,PRICE_LEVEL_VERY_EXPENSIVE:4};
 const CHAINS=/In-N-Out|Raising Cane|Chick-fil-A|Roberto's|Panda Express|Del Taco|Popeyes|Farmer Boys|Starbucks|Jack in the Box|Taco Bell|McDonald|Burger King|Wendy|Carl's Jr|Habit Burger|Freddy's|Zaxby|Bojangles|Rivas|Dutch Bros|Sonic Drive|Whataburger|KFC|El Pollo Loco|Jollibee|Wienerschnitzel|Arby/i;
 const CAP=900;
@@ -602,9 +647,9 @@ function mapPlace(g){const rng=g.priceRange||{},lo=rng.startPrice?.units,hi=rng.
     lat:g.location?.latitude,lng:g.location?.longitude,r:g.rating||0,v:g.userRatingCount||0,pr:PL[g.priceLevel]??null,
     bmin:lo!=null?+lo:null,bmax:hi!=null?+hi:null,h:(g.regularOpeningHours?.weekdayDescriptions||[]).map(x=>x.replace(/[  ]/g," ")),
     liveOpen:g.currentOpeningHours?.openNow??null,live:Date.now(),dineIn:g.dineIn,takeout:g.takeout,
-    gurl:g.googleMapsUri,closed:g.businessStatus==="CLOSED_PERMANENTLY",tmp:g.businessStatus==="CLOSED_TEMPORARILY"}}
+    gurl:g.googleMapsUri,ph:g.nationalPhoneNumber,web:g.websiteUri,closed:g.businessStatus==="CLOSED_PERMANENTLY",tmp:g.businessStatus==="CLOSED_TEMPORARILY"}}
 function applyLive(o){if(o.lat==null)return;let p=DATA.find(x=>x.id===o.id);
-  if(p){Object.assign(p,{gurl:o.gurl||p.gurl,r:o.r||p.r,v:o.v||p.v,liveOpen:o.liveOpen,live:o.live,closed:o.closed,tmp:o.tmp});if(o.h.length===7)p.h=o.h;if(o.pr){p.pr=o.pr;p.pe=0}if(o.bmin!=null){p.bmin=o.bmin;p.bmax=o.bmax}}
+  if(p){Object.assign(p,{ph:o.ph||p.ph,web:o.web||p.web,gurl:o.gurl||p.gurl,r:o.r||p.r,v:o.v||p.v,liveOpen:o.liveOpen,live:o.live,closed:o.closed,tmp:o.tmp});if(o.h.length===7)p.h=o.h;if(o.pr){p.pr=o.pr;p.pe=0}if(o.bmin!=null){p.bmin=o.bmin;p.bmax=o.bmax}}
   else DATA.push(Object.assign({},o,{s:"New from live Google results. No review summary yet.",o:"Check the reviews on Google",w:"",
     m:(o.dineIn===false||/fast food|sandwich|coffee|bakery|takeout|food court/i.test(o.c))?"counter":"sit",dt:CHAINS.test(o.n)?1:0,pe:o.pr||o.bmin!=null?0:1,pr:o.pr||2,isNew:1}))}
 function ingest(list){list.forEach(g=>{const o=mapPlace(g);LIVE[o.id]=o;applyLive(o)});
@@ -657,6 +702,40 @@ function setupSettings(){$("#gear").onclick=openSettings;
   $("#checkupd").onclick=()=>{if(isApp)Native.checkWebUpdate();checkRelease(true)};
   document.addEventListener("click",e=>{if(e.target.id==="addkey"){e.preventDefault();openSettings()}});}
 
+/* ---------- Restaurant details ---------- */
+const IC={dir:'<path d="M3 11 21 3l-8 18-2-8-8-2z"/>',menu:'<path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/>',call:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+  web:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',rev:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>'};
+const icon=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k]}</svg>`;
+const cityOf=p=>(p.a.split(",").slice(-2,-1)[0]||"Las Vegas").trim();
+const menuUrl=p=>`https://www.google.com/search?q=${encodeURIComponent(p.n+" "+cityOf(p)+" menu")}`;
+function openDetail(i){const p=DATA[i];if(!p)return;compute();const info=openInfo(p),today=vegasNow().day;
+  const hours=p.h&&p.h.length===7?`<table class="hours">${p.h.map((x,d)=>`<tr class="${d===today?"today":""}"><td>${DAYNAMES[d]}</td><td>${esc(dayStr(p,d))}</td></tr>`).join("")}</table>`:'<p class="meta" style="margin:0">Hours aren\'t listed. Check Google before you go.</p>';
+  $("#dbody").innerHTML=`<div class="dwrap">
+    <div class="dhead"><div><span class="lbl">${esc(p.c)}</span><h2 id="dname">${esc(p.n)}</h2><div class="meta">${budgetTxt(p)} · ~${p.d.toFixed(1)} mi away</div></div><button class="dx" id="dclose" aria-label="Close">×</button></div>
+    <div class="dstatus">${openPill(p)}${svcPills(p)}</div>
+    <div class="stats"><span><span class="star">★</span> ${p.r.toFixed(1)} <span class="meta">(${p.v.toLocaleString()} reviews)</span></span><span class="true">${p.adj.toFixed(2)} adj</span></div>
+    <div class="acts">
+      <a class="act primary" href="${dirUrl(p)}" target="_blank" rel="noopener">${icon("dir")}Directions</a>
+      <a class="act" href="${menuUrl(p)}" target="_blank" rel="noopener">${icon("menu")}Menu</a>
+      ${p.ph?`<a class="act" href="tel:${p.ph.replace(/[^\d+]/g,"")}">${icon("call")}Call</a>`:""}
+      ${p.web?`<a class="act" href="${esc(p.web)}" target="_blank" rel="noopener">${icon("web")}Website</a>`:""}
+      <a class="act" href="${mapsUrl(p)}" target="_blank" rel="noopener">${icon("rev")}Reviews</a>
+    </div>
+    <div class="dsec"><h3>What people say</h3><p class="say" style="margin:0">${esc(p.s)}</p>
+      <dl class="dl"><dt>Order</dt><dd>${esc(p.o)}</dd>${p.w&&p.w!=="None that repeat"?`<dt>Heads-up</dt><dd>${esc(p.w)}</dd>`:""}</dl></div>
+    <div class="dsec"><h3>Hours</h3>${hours}<p class="meta" style="margin:6px 0 0">${p.live?`Updated from Google ${ago(p.live)}.`:"From Google Maps, Oct 5. Holiday hours may differ."}</p></div>
+    <div class="dsec"><h3>Address</h3><div class="addr">${esc(p.a)}</div>${p.ph?`<div class="addr">${esc(p.ph)}</div>`:""}</div>
+  </div>`;
+  const dlg=$("#detail");if(!dlg.open){dlg.showModal();try{history.pushState({wtdDetail:1},"")}catch(e){}}
+  $("#dclose").onclick=()=>dlg.close();dlg.scrollTop=0}
+function setupDetail(){const dlg=$("#detail");
+  dlg.addEventListener("click",e=>{if(e.target===dlg)dlg.close()});
+  dlg.addEventListener("close",()=>{if(history.state&&history.state.wtdDetail)history.back()});
+  addEventListener("popstate",()=>{if(dlg.open)dlg.close()});
+  document.addEventListener("click",e=>{const d=e.target.closest("[data-detail]");if(d){e.preventDefault();openDetail(+d.dataset.detail);return}
+    const card=e.target.closest(".card.tap");if(card&&!e.target.closest("a,button"))openDetail(+card.id.slice(1))});
+  $("#list").addEventListener("keydown",e=>{const card=e.target.closest(".card.tap");if(card&&(e.key==="Enter"||e.key===" ")&&e.target===card){e.preventDefault();openDetail(+card.id.slice(1))}});}
+
 function showTab(w){[["list","#t-list","#v-list"],["map","#t-map","#v-map"],["wheel","#t-wheel","#v-wheel"]].forEach(([k,t,v])=>{$(t).setAttribute("aria-selected",k===w);$(v).hidden=k!==w});
   document.querySelectorAll("#bnav [data-v]").forEach(b=>b.setAttribute("aria-current",b.dataset.v===w));closeSheet();
   if(w==="wheel")buildWheel();if(w==="map"){initMap();render();setTimeout(()=>map&&map.invalidateSize(),60)}
@@ -689,7 +768,7 @@ function setup(){
     if(isApp)Native.checkWebUpdate();await liveRefresh(true);b.classList.remove("spinning")};
   $("#sform").onsubmit=e=>{e.preventDefault();liveSearch($("#q").value.trim())};
   $("#q").addEventListener("search",()=>{if(!$("#q").value)liveSearch("")});
-  setupSettings();
+  setupSettings();setupDetail();
   $("#bnav").onclick=e=>{const b=e.target.closest("[data-v]");if(!b)return;b.dataset.v==="filters"?(document.body.classList.contains("sheet")?closeSheet():openSheet()):showTab(b.dataset.v)};
   $("#scrim").onclick=closeSheet;$("#sheetdone").onclick=closeSheet;
   document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSheet()});
