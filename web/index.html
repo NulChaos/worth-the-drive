@@ -156,7 +156,7 @@ dialog input[type=password],dialog input[type=text]{width:100%;font:inherit;colo
 .mapbtn{position:absolute;right:10px;bottom:24px;z-index:500}
 /* App shell on phones: compact header, filters in a bottom sheet, bottom tab bar */
 #bnav,.sheethead,#scrim{display:none}
-.darktiles{filter:invert(1) hue-rotate(180deg) brightness(.92) contrast(.88) saturate(.55)}
+.darktiles{filter:invert(1) hue-rotate(180deg) brightness(1) contrast(.85) saturate(.6)}
 .pin{width:28px;height:28px;border-radius:50%;background:var(--neon);color:#fff;font:800 13px/1 var(--display);display:grid;place-items:center;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4)}
 .badge{display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 5px;border-radius:999px;background:var(--neon);color:#fff;font:700 11px/1 var(--body);margin-left:4px}
 .badge:empty{display:none}
@@ -551,10 +551,10 @@ function popupHtml(p,rank){return `<div class="pp"><span class="lbl">#${rank} ·
 function updateMap(vis,top3){if(!map)return;mapLayers.clearLayers();originLayer.clearLayers();
   const ranked=sorted(vis,"smart"),rank=new Map(ranked.map((p,n)=>[p.i,n+1]));
   const acc=css("--accent"),neon=css("--neon"),panel=css("--panel"),ink=css("--ink");
-  const hi=ranked[0]?.score??0,lo=ranked[ranked.length-1]?.score??0;
+  const hi=ranked[0]?.score??0,lo=ranked[ranked.length-1]?.score??0;const dense=ranked.length>60;
   ranked.slice().reverse().forEach(p=>{const n=rank.get(p.i);const t=hi>lo?(p.score-lo)/(hi-lo):1;
     const m=top3.has(p.i)?L.marker([p.lat,p.lng],{icon:L.divIcon({className:"",html:`<div class="pin">${n}</div>`,iconSize:[28,28],iconAnchor:[14,14],popupAnchor:[0,-12]}),zIndexOffset:1000-n})
-      :L.circleMarker([p.lat,p.lng],{radius:5+t*5,color:"#ffffff",opacity:.9,weight:1.5,fillColor:acc,fillOpacity:.55+t*.4});
+      :L.circleMarker([p.lat,p.lng],{radius:(dense?2.5:5)+t*(dense?4:5),color:"#ffffff",opacity:dense?.7:.9,weight:dense?1:1.5,fillColor:acc,fillOpacity:.55+t*.4});
     m.bindPopup(()=>popupHtml(p,n),{maxWidth:270,autoPanPadding:[20,60]}).addTo(mapLayers)});
   const o=origin(),me=ORIGINS[0];
   if(o.k!=="me")L.circleMarker([o.lat,o.lng],{radius:8,color:panel,weight:3,fillColor:ink,fillOpacity:1}).bindTooltip("Start: "+o.n).addTo(originLayer);
