@@ -1,5 +1,5 @@
 // Worth the Drive service worker: keeps the app working offline and picks up new versions from GitHub Pages.
-const CACHE = "wtd-v2";
+const CACHE = "wtd-v3";
 const SHELL = ["./", "./index.html", "./data.json", "./leaflet.js", "./leaflet.css", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/apple-touch-icon.png"];
 
 self.addEventListener("install", e => {
